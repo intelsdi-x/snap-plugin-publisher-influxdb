@@ -13,6 +13,11 @@
 			"Rev": "8b3219e74fcc3843a6f4901bdf00e905642b6bd6"
 		},
 		{
+			"ImportPath": "github.com/influxdb/influxdb/tsdb",
+			"Comment": "v0.9.1",
+			"Rev": "8b3219e74fcc3843a6f4901bdf00e905642b6bd6"
+		},
+		{
 			"ImportPath": "github.com/intelsdi-x/gomit",
 			"Rev": "4f098da2bbb51d787be003e4abfbc25d01837564"
 		},
