@@ -19,7 +19,7 @@ import (
 
 const (
 	name       = "influx"
-	version    = 1
+	version    = 2
 	pluginType = plugin.PublisherPluginType
 )
 
