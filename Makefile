@@ -2,7 +2,7 @@ default:
 	$(MAKE) deps
 	$(MAKE) all
 deps:
-	bash -c "./scripts/deps.sh"
+	bash -c "godep restore"
 test:
 	export PULSE_PLUGIN_PATH=`pwd`/build; bash -c "./scripts/test.sh"
 check:
