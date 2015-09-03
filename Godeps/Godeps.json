@@ -1,5 +1,5 @@
 {
-	"ImportPath": "github.com/intelsdi-x/pulse/plugin/publisher/pulse-publisher-influxdb",
+	"ImportPath": "github.com/intelsdi-x/pulse-plugin-publisher-influxdb",
 	"GoVersion": "go1.4.2",
 	"Deps": [
 		{
@@ -9,6 +9,11 @@
 		},
 		{
 			"ImportPath": "github.com/influxdb/influxdb/influxql",
+			"Comment": "v0.9.1",
+			"Rev": "8b3219e74fcc3843a6f4901bdf00e905642b6bd6"
+		},
+		{
+			"ImportPath": "github.com/influxdb/influxdb/tsdb",
 			"Comment": "v0.9.1",
 			"Rev": "8b3219e74fcc3843a6f4901bdf00e905642b6bd6"
 		},
