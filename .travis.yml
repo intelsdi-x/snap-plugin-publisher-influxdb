@@ -22,6 +22,7 @@ install:
 - export TMPDIR=$HOME/tmp
 - mkdir -p $TMPDIR
 - cd $PULSE_PLUGIN_SOURCE # change dir into source
+- make deps
 script:
 - make check 2>&1 # Run test suite
 notifications:
