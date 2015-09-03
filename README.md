@@ -1,2 +1,2 @@
-# pulse-plugin-publisher-influxdb
-Pulse Plugin for publishing metrics to Influxdb
+This plugin currently support influxdb version 0.9.0.
+
