@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/url"
 	"strings"
-	"time"
 
 	log "github.com/Sirupsen/logrus"
 
@@ -112,15 +111,18 @@ func (f *influxPublisher) Publish(contentType string, content []byte, config map
 	for i, m := range metrics {
 		pts[i] = client.Point{
 			Measurement: strings.Join(m.Namespace(), "/"),
+			Time:        m.Timestamp(),
+			Tags: map[string]string{
+				"source": m.Source(),
+			},
 			Fields: map[string]interface{}{
 				"value": m.Data(),
 			},
+			Precision: "s",
 		}
 	}
 
 	bps := client.BatchPoints{
-		Time:            time.Now(),
-		Precision:       "s",
 		Points:          pts,
 		Database:        config["database"].(ctypes.ConfigValueStr).Value,
 		RetentionPolicy: "default",
