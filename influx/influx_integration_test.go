@@ -6,10 +6,9 @@ package influx
 import (
 	"bytes"
 	"encoding/gob"
-	"errors"
-	"log"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/intelsdi-x/pulse/control/plugin"
 	"github.com/intelsdi-x/pulse/core/ctypes"
@@ -20,7 +19,9 @@ import (
 func TestInfluxPublish(t *testing.T) {
 	config := make(map[string]ctypes.ConfigValue)
 
-	Convey("TestInflux", t, func() {
+	Convey("Pulse Plugin InfluxDB integration testing with Influx", t, func() {
+		var buf bytes.Buffer
+
 		config["host"] = ctypes.ConfigValueStr{Value: os.Getenv("PULSE_INFLUXDB_HOST")}
 		config["port"] = ctypes.ConfigValueInt{Value: 8086}
 		config["user"] = ctypes.ConfigValueStr{Value: "root"}
@@ -28,50 +29,63 @@ func TestInfluxPublish(t *testing.T) {
 		config["database"] = ctypes.ConfigValueStr{Value: "test"}
 
 		ip := NewInfluxPublisher()
-		So(ip, ShouldNotBeNil)
-
 		policy := ip.GetConfigPolicyNode()
-		So(policy, ShouldNotBeNil)
-		cfg, errs := policy.Process(config)
-		So(cfg, ShouldNotBeNil)
-		So(errs.HasErrors(), ShouldBeFalse)
-		So(cfg, ShouldNotBeNil)
+		cfg, _ := policy.Process(config)
 
-		Convey("Publish", func() {
-			var buf bytes.Buffer
-			metrics := []plugin.PluginMetric{
-				*plugin.NewPluginMetric([]string{"foo"}, 99),
+		Convey("Publish integer metric", func() {
+			metrics := []plugin.PluginMetricType{
+				*plugin.NewPluginMetricType([]string{"foo"}, time.Now(), "127.0.0.1", 99),
 			}
+			buf.Reset()
 			enc := gob.NewEncoder(&buf)
 			enc.Encode(metrics)
-			Convey("int", func() {
-				err := ip.Publish(plugin.ContentTypes[plugin.PulseGobContentType], buf.Bytes(), *cfg, log.New(os.Stdout, "influx_test", log.LstdFlags))
-				So(err, ShouldBeNil)
-			})
+			err := ip.Publish(plugin.PulseGOBContentType, buf.Bytes(), *cfg)
+			So(err, ShouldBeNil)
+		})
 
-			Convey("float", func() {
-				metrics = []plugin.PluginMetric{
-					*plugin.NewPluginMetric([]string{"foo"}, 3.141),
-				}
-				buf.Reset()
-				enc = gob.NewEncoder(&buf)
-				enc.Encode(metrics)
-				err := ip.Publish(plugin.ContentTypes[plugin.PulseGobContentType], buf.Bytes(), *cfg, log.New(os.Stdout, "influx_test", log.LstdFlags))
-				So(err, ShouldBeNil)
-			})
+		Convey("Publish float metric", func() {
+			metrics := []plugin.PluginMetricType{
+				*plugin.NewPluginMetricType([]string{"bar"}, time.Now(), "127.0.0.1", 3.141),
+			}
+			buf.Reset()
+			enc := gob.NewEncoder(&buf)
+			enc.Encode(metrics)
+			err := ip.Publish(plugin.PulseGOBContentType, buf.Bytes(), *cfg)
+			So(err, ShouldBeNil)
+		})
 
-			Convey("Unsupported data value error", func() {
-				metrics = []plugin.PluginMetric{
-					*plugin.NewPluginMetric([]string{"foo"}, "bar"),
-				}
-				buf.Reset()
-				enc = gob.NewEncoder(&buf)
-				enc.Encode(metrics)
-				err := ip.Publish(plugin.ContentTypes[plugin.PulseGobContentType], buf.Bytes(), *cfg, log.New(os.Stdout, "influx_test", log.LstdFlags))
-				So(err, ShouldNotBeNil)
-				So(err, ShouldResemble, errors.New("Unsupported data type 'string'"))
+		Convey("Publish string metric", func() {
+			metrics := []plugin.PluginMetricType{
+				*plugin.NewPluginMetricType([]string{"qux"}, time.Now(), "127.0.0.1", "bar"),
+			}
+			buf.Reset()
+			enc := gob.NewEncoder(&buf)
+			enc.Encode(metrics)
+			err := ip.Publish(plugin.PulseGOBContentType, buf.Bytes(), *cfg)
+			So(err, ShouldBeNil)
+		})
 
-			})
+		Convey("Publish boolean metric", func() {
+			metrics := []plugin.PluginMetricType{
+				*plugin.NewPluginMetricType([]string{"baz"}, time.Now(), "127.0.0.1", true),
+			}
+			buf.Reset()
+			enc := gob.NewEncoder(&buf)
+			enc.Encode(metrics)
+			err := ip.Publish(plugin.PulseGOBContentType, buf.Bytes(), *cfg)
+			So(err, ShouldBeNil)
+		})
+
+		Convey("Publish multiple metrics", func() {
+			metrics := []plugin.PluginMetricType{
+				*plugin.NewPluginMetricType([]string{"foo"}, time.Now(), "127.0.0.1", 101),
+				*plugin.NewPluginMetricType([]string{"bar"}, time.Now(), "127.0.0.1", 5.789),
+			}
+			buf.Reset()
+			enc := gob.NewEncoder(&buf)
+			enc.Encode(metrics)
+			err := ip.Publish(plugin.PulseGOBContentType, buf.Bytes(), *cfg)
+			So(err, ShouldBeNil)
 		})
 
 	})
