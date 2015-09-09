@@ -1,3 +1,6 @@
+//
+// +build unit
+
 package influx
 
 import (

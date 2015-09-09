@@ -4,7 +4,7 @@ default:
 deps:
 	bash -c "godep restore"
 test:
-	export PULSE_PLUGIN_PATH=`pwd`/build; bash -c "./scripts/test.sh"
+	bash -c "./scripts/test.sh $(TEST)"
 check:
 	$(MAKE) test
 all:

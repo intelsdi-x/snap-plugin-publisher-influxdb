@@ -7,65 +7,83 @@
 # 5. race detector (http://blog.golang.org/race-detector)
 # 6. test coverage (http://blog.golang.org/cover)
 
-COVERALLS_TOKEN=t47LG6BQsfLwb9WxB56hXUezvwpED6D11
-TEST_DIRS="main.go influx/"
-VET_DIRS=". ./influx/..."
+# Capture what test we should run
+TEST_SUITE=$1
 
-set -e
+if [[ $TEST_SUITE == "unit" ]]; then
+	go get github.com/axw/gocov/gocov
+	go get github.com/mattn/goveralls
+	go get -u github.com/golang/lint/golint
+	go get golang.org/x/tools/cmd/vet
+	go get golang.org/x/tools/cmd/goimports
+	go get github.com/smartystreets/goconvey/convey
+	go get golang.org/x/tools/cmd/cover
+	
+	COVERALLS_TOKEN=t47LG6BQsfLwb9WxB56hXUezvwpED6D11
+	TEST_DIRS="main.go influx/"
+	VET_DIRS=". ./influx/..."
 
-# Automatic checks
-echo "gofmt"
-test -z "$(gofmt -l -d $TEST_DIRS | tee /dev/stderr)"
+	set -e
 
-echo "goimports"
-test -z "$(goimports -l -d $TEST_DIRS | tee /dev/stderr)"
+	# Automatic checks
+	echo "gofmt"
+	test -z "$(gofmt -l -d $TEST_DIRS | tee /dev/stderr)"
 
-# Useful but should not fail on link per: https://github.com/golang/lint
-# "The suggestions made by golint are exactly that: suggestions. Golint is not perfect,
-# and has both false positives and false negatives. Do not treat its output as a gold standard.
-# We will not be adding pragmas or other knobs to suppress specific warnings, so do not expect
-# or require code to be completely "lint-free". In short, this tool is not, and will never be,
-# trustworthy enough for its suggestions to be enforced automatically, for example as part of
-# a build process"
-# echo "golint"
-# golint ./...
+	echo "goimports"
+	test -z "$(goimports -l -d $TEST_DIRS | tee /dev/stderr)"
 
-echo "go vet"
-go vet $VET_DIRS
-# go test -race ./... - Lets disable for now
+	# Useful but should not fail on link per: https://github.com/golang/lint
+	# "The suggestions made by golint are exactly that: suggestions. Golint is not perfect,
+	# and has both false positives and false negatives. Do not treat its output as a gold standard.
+	# We will not be adding pragmas or other knobs to suppress specific warnings, so do not expect
+	# or require code to be completely "lint-free". In short, this tool is not, and will never be,
+	# trustworthy enough for its suggestions to be enforced automatically, for example as part of
+	# a build process"
+	# echo "golint"
+	# golint ./...
+
+	echo "go vet"
+	go vet $VET_DIRS
+	# go test -race ./... - Lets disable for now
  
-# Run test coverage on each subdirectories and merge the coverage profile.
-echo "mode: count" > profile.cov
+	# Run test coverage on each subdirectories and merge the coverage profile.
+	echo "mode: count" > profile.cov
  
-# Standard go tooling behavior is to ignore dirs with leading underscors
-for dir in $(find . -maxdepth 10 -not -path './.git*' -not -path '*/_*' -not -path './examples/*' -not -path './scripts/*' -not -path './build/*' -not -path './Godeps/*' -type d);
-do
-	if ls $dir/*.go &> /dev/null; then
-	    go test -covermode=count -coverprofile=$dir/profile.tmp $dir
-	    if [ -f $dir/profile.tmp ]
-	    then
-	        cat $dir/profile.tmp | tail -n +2 >> profile.cov
-	        rm $dir/profile.tmp
-	    fi
-	fi
-done
+	# Standard go tooling behavior is to ignore dirs with leading underscors
+	for dir in $(find . -maxdepth 10 -not -path './.git*' -not -path '*/_*' -not -path './examples/*' -not -path './scripts/*' -not -path './build/*' -not -path './Godeps/*' -type d);
+	do
+		if ls $dir/*.go &> /dev/null; then
+	    		go test --tags=unit -covermode=count -coverprofile=$dir/profile.tmp $dir
+	    		if [ -f $dir/profile.tmp ]
+	    		then
+	        		cat $dir/profile.tmp | tail -n +2 >> profile.cov
+	        		rm $dir/profile.tmp
+	    		fi
+		fi
+	done
  
-go tool cover -func profile.cov
+	go tool cover -func profile.cov
  
-# Disabled Coveralls.io for now
-# To submit the test coverage result to coveralls.io,
-# use goveralls (https://github.com/mattn/goveralls)
-# goveralls -coverprofile=profile.cov -service=travis-ci -repotoken t47LG6BQsfLwb9WxB56hXUezvwpED6D11
-#
-# If running inside Travis we update coveralls. We don't want his happening on Macs
-# if [ "$TRAVIS" == "true" ]
-# then
-#     n=1
-#     until [ $n -ge 6 ]
-#     do
-#         echo "posting to coveralls attempt $n of 5"
-#         goveralls -v -coverprofile=profile.cov -service travis.ci -repotoken $COVERALLS_TOKEN && break
-#         n=$[$n+1]
-#         sleep 30
-#     done
-# fi
+	# Disabled Coveralls.io for now
+	# To submit the test coverage result to coveralls.io,
+	# use goveralls (https://github.com/mattn/goveralls)
+	# goveralls -coverprofile=profile.cov -service=travis-ci -repotoken t47LG6BQsfLwb9WxB56hXUezvwpED6D11
+	#
+	# If running inside Travis we update coveralls. We don't want his happening on Macs
+	# if [ "$TRAVIS" == "true" ]
+	# then
+	#     n=1
+	#     until [ $n -ge 6 ]
+	#     do
+	#         echo "posting to coveralls attempt $n of 5"
+	#         goveralls -v -coverprofile=profile.cov -service travis.ci -repotoken $COVERALLS_TOKEN && break
+	#         n=$[$n+1]
+	#         sleep 30
+	#     done
+	# fi
+elif [[ $TEST_SUITE == "integration" ]]; then
+	cd scripts/docker/$INFLUX_VERSION; docker build -t intelsdi-x/influxdb:$INFLUX_VERSION .
+        docker run -d --net=host -e PRE_CREATE_DB="test" intelsdi-x/influxdb:$INFLUX_VERSION	
+	cd $PULSE_PLUGIN_SOURCE
+	PULSE_INFLUXDB_HOST=127.0.0.1 go test -v --tags=integration ./...
+fi
