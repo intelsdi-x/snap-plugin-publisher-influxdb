@@ -86,4 +86,6 @@ elif [[ $TEST_SUITE == "integration" ]]; then
         docker run -d --net=host -e PRE_CREATE_DB="test" intelsdi-x/influxdb:$INFLUX_VERSION	
 	cd $PULSE_PLUGIN_SOURCE
 	PULSE_INFLUXDB_HOST=127.0.0.1 go test -v --tags=integration ./...
+elif [[ $TEST_SUITE == "integration_pulse" ]]; then
+	echo "We're gonna test against pulse($PULSE_VERSION), not sure how yet"
 fi
