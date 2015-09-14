@@ -16,6 +16,7 @@ env:
   matrix:
     - TEST=unit
     - TEST=integration INFLUX_VERSION=v0.9.1
+    - TEST=integration_pulse PULSE_VERSION=0.2.0
 install:
 - export TMPDIR=$HOME/tmp
 - mkdir -p $TMPDIR

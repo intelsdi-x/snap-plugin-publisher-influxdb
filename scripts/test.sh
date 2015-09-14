@@ -86,4 +86,10 @@ elif [[ $TEST_SUITE == "integration" ]]; then
         docker run -d --net=host -e PRE_CREATE_DB="test" intelsdi-x/influxdb:$INFLUX_VERSION	
 	cd $PULSE_PLUGIN_SOURCE
 	PULSE_INFLUXDB_HOST=127.0.0.1 go test -v --tags=integration ./...
+elif [[ $TEST_SUITE == "integration_pulse" ]]; then
+	# Download and start pulsed agent
+	https://github.com/intelsdi-x/pulse/releases/download/0.2.0/pulse-0.2.0-linux-amd64.tar.gz
+	curl -L -n --remote-name https://github.com/intelsdi-x/pulse/releases/download/$PULSE_VERSION/pulse-$PULSE_VERSION-linux-amd64.tar.gz
+	tar -xzvf pulse-$PULSE_VERISON-linux-amd64.tar.gz
+	ls
 fi
