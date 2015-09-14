@@ -88,7 +88,7 @@ elif [[ $TEST_SUITE == "integration" ]]; then
 	PULSE_INFLUXDB_HOST=127.0.0.1 go test -v --tags=integration ./...
 elif [[ $TEST_SUITE == "integration_pulse" ]]; then
 	# Download and start pulsed agent
-	wget https://github.com/intelsdi-x/pulse/releases/download/$PULSE_VERSION/pulse-$PULSE_VERISON-linux-amd64.tar.gz
+	wget https://github.com/intelsdi-x/pulse/releases/download/$PULSE_VERSION/pulse-$PULSE_VERSION-linux-amd64.tar.gz
 	tar -xzvf pulse-$PULSE_VERISON-linux-amd64.tar.gz
 	ls
 fi
