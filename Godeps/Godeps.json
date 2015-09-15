@@ -37,13 +37,13 @@
 		},
 		{
 			"ImportPath": "github.com/intelsdi-x/pulse/control/plugin",
-			"Comment": "0.2.0",
-			"Rev": "1d138b91a09f8636547dba1bebdd26c86709fcd2"
+			"Comment": "HEAD",
+			"Rev": "6078a9e82c1bbdb0d76d75e5c22a746f546ddf5c"
 		},
 		{
 			"ImportPath": "github.com/intelsdi-x/pulse/core/ctypes",
-			"Comment": "0.2.0",
-			"Rev": "1d138b91a09f8636547dba1bebdd26c86709fcd2"
+			"Comment": "HEAD",
+			"Rev": "6078a9e82c1bbdb0d76d75e5c22a746f546ddf5c"
 		}
 	]
 }

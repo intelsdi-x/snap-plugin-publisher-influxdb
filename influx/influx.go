@@ -18,7 +18,7 @@ import (
 
 const (
 	name       = "influx"
-	version    = 3
+	version    = 4
 	pluginType = plugin.PublisherPluginType
 )
 
@@ -35,7 +35,8 @@ func NewInfluxPublisher() *influxPublisher {
 type influxPublisher struct {
 }
 
-func (f *influxPublisher) GetConfigPolicyNode() cpolicy.ConfigPolicyNode {
+func (f *influxPublisher) GetConfigPolicy() cpolicy.ConfigPolicy {
+	cp := cpolicy.New()
 	config := cpolicy.NewPolicyNode()
 
 	r1, err := cpolicy.NewStringRule("host", true)
@@ -63,7 +64,8 @@ func (f *influxPublisher) GetConfigPolicyNode() cpolicy.ConfigPolicyNode {
 	r5.Description = "Influxdb password"
 	config.Add(r4)
 
-	return *config
+	cp.Add([]string{""}, config)
+	return *cp
 }
 
 // Publish publishes metric data to influxdb
