@@ -3,5 +3,9 @@
 
 This plugin supports pushing metrics into an InfluxDB instance.
 
-This plugin currently support influxdb version 0.9.1.
+Support Matrix
+
+InfluxDB Plugin: v2 -> InfluxDB Version 0.9.1 -> Pulse version 0.2.0
+InfluxDB Plugin: v3 -> InfluxDB Version 0.9.4 -> Pulse version 0.2.0
+InfluxDB Plugin: v4 -> InfluxDB Version 0.9.4 -> Pulse version 0.3.x
 

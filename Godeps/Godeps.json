@@ -4,18 +4,18 @@
 	"Deps": [
 		{
 			"ImportPath": "github.com/influxdb/influxdb/client",
-			"Comment": "v0.9.1",
-			"Rev": "8b3219e74fcc3843a6f4901bdf00e905642b6bd6"
+			"Comment": "v0.9.4",
+			"Rev": "d81618c57fae135d9b1c1a8fb3403722ceb29354"
 		},
 		{
 			"ImportPath": "github.com/influxdb/influxdb/influxql",
-			"Comment": "v0.9.1",
-			"Rev": "8b3219e74fcc3843a6f4901bdf00e905642b6bd6"
+			"Comment": "v0.9.4",
+			"Rev": "d81618c57fae135d9b1c1a8fb3403722ceb29354"
 		},
 		{
 			"ImportPath": "github.com/influxdb/influxdb/tsdb",
-			"Comment": "v0.9.1",
-			"Rev": "8b3219e74fcc3843a6f4901bdf00e905642b6bd6"
+			"Comment": "v0.9.4",
+			"Rev": "d81618c57fae135d9b1c1a8fb3403722ceb29354"
 		},
 		{
 			"ImportPath": "github.com/intelsdi-x/gomit",
