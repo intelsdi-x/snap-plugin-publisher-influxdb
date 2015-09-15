@@ -27,13 +27,13 @@ func TestInfluxDBPlugin(t *testing.T) {
 		Convey("So ip should be of influxPublisher type", func() {
 			So(ip, ShouldHaveSameTypeAs, &influxPublisher{})
 		})
-		Convey("ip.GetConfigPolicyNode() should return a config policy node", func() {
-			config := ip.GetConfigPolicyNode()
+		Convey("ip.GetConfigPolicy() should return a config policy", func() {
+			config := ip.GetConfigPolicy()
 			Convey("So config should not be nil", func() {
 				So(config, ShouldNotBeNil)
 			})
-			Convey("So config should be a cpolicy.ConfigPolicyNode", func() {
-				So(config, ShouldHaveSameTypeAs, cpolicy.ConfigPolicyNode{})
+			Convey("So config should be a cpolicy.ConfigPolicy", func() {
+				So(config, ShouldHaveSameTypeAs, cpolicy.ConfigPolicy{})
 			})
 		})
 	})
