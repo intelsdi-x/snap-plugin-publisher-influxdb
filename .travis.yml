@@ -15,6 +15,7 @@ env:
     - PULSE_PLUGIN_SOURCE=/home/travis/gopath/src/github.com/intelsdi-x/pulse-plugin-publisher-influxdb
   matrix:
     - TEST=unit
+    - TEST=integration INFLUX_VERSION=v0.9.1
     - TEST=integration INFLUX_VERSION=v0.9.4
 install:
 - export TMPDIR=$HOME/tmp
