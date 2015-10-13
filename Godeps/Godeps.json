@@ -36,14 +36,9 @@
 			"Rev": "eb2e83c1df892d2c9ad5a3c85672da30be585dfd"
 		},
 		{
-			"ImportPath": "github.com/intelsdi-x/pulse/control/plugin",
+			"ImportPath": "github.com/intelsdi-x/pulse",
 			"Comment": "HEAD",
-			"Rev": "6078a9e82c1bbdb0d76d75e5c22a746f546ddf5c"
-		},
-		{
-			"ImportPath": "github.com/intelsdi-x/pulse/core/ctypes",
-			"Comment": "HEAD",
-			"Rev": "6078a9e82c1bbdb0d76d75e5c22a746f546ddf5c"
+			"Rev": "544d1d673afb6b7e6f2f07331da79fb4de143d7e"
 		}
 	]
 }
