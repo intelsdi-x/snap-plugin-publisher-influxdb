@@ -46,7 +46,7 @@ func TestInfluxPublish(t *testing.T) {
 		config["database"] = ctypes.ConfigValueStr{Value: "test"}
 
 		ip := NewInfluxPublisher()
-		cp := ip.GetConfigPolicy()
+		cp, _ := ip.GetConfigPolicy()
 		cfg, _ := cp.Get([]string{""}).Process(config)
 
 		Convey("Publish integer metric", func() {

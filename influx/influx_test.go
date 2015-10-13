@@ -45,13 +45,16 @@ func TestInfluxDBPlugin(t *testing.T) {
 		Convey("So ip should be of influxPublisher type", func() {
 			So(ip, ShouldHaveSameTypeAs, &influxPublisher{})
 		})
+		configPolicy, err := ip.GetConfigPolicy()
 		Convey("ip.GetConfigPolicy() should return a config policy", func() {
-			configPolicy := ip.GetConfigPolicy()
 			Convey("So config policy should not be nil", func() {
 				So(configPolicy, ShouldNotBeNil)
 			})
+			Convey("So we should not get an err retreiving the config policy", func() {
+				So(err, ShouldBeNil)
+			})
 			Convey("So config policy should be a cpolicy.ConfigPolicy", func() {
-				So(configPolicy, ShouldHaveSameTypeAs, cpolicy.ConfigPolicy{})
+				So(configPolicy, ShouldHaveSameTypeAs, &cpolicy.ConfigPolicy{})
 			})
 			testConfig := make(map[string]ctypes.ConfigValue)
 			testConfig["host"] = ctypes.ConfigValueStr{Value: "localhost"}
