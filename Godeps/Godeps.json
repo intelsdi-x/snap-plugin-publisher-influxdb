@@ -18,10 +18,6 @@
 			"Rev": "d81618c57fae135d9b1c1a8fb3403722ceb29354"
 		},
 		{
-			"ImportPath": "github.com/intelsdi-x/gomit",
-			"Rev": "4f098da2bbb51d787be003e4abfbc25d01837564"
-		},
-		{
 			"ImportPath": "github.com/jtolds/gls",
 			"Rev": "f1ac7f4f24f50328e6bc838ca4437d1612a0243c"
 		},
@@ -37,8 +33,8 @@
 		},
 		{
 			"ImportPath": "github.com/intelsdi-x/pulse",
-			"Comment": "HEAD",
-			"Rev": "544d1d673afb6b7e6f2f07331da79fb4de143d7e"
+			"Comment": "v0.8.0-beta",
+			"Rev": "de2881352745c206284b74f4ef1165ba4510971a"
 		}
 	]
 }
