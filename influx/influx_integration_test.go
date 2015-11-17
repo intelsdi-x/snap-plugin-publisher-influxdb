@@ -28,6 +28,7 @@ import (
 	"time"
 
 	"github.com/intelsdi-x/pulse/control/plugin"
+	"github.com/intelsdi-x/pulse/core"
 	"github.com/intelsdi-x/pulse/core/ctypes"
 
 	. "github.com/smartystreets/goconvey/convey"
@@ -44,14 +45,18 @@ func TestInfluxPublish(t *testing.T) {
 		config["user"] = ctypes.ConfigValueStr{Value: "root"}
 		config["password"] = ctypes.ConfigValueStr{Value: "root"}
 		config["database"] = ctypes.ConfigValueStr{Value: "test"}
+		config["debug"] = ctypes.ConfigValueBool{Value: false}
+		config["log-level"] = ctypes.ConfigValueStr{Value: "debug"}
 
 		ip := NewInfluxPublisher()
 		cp, _ := ip.GetConfigPolicy()
 		cfg, _ := cp.Get([]string{""}).Process(config)
+		tags := map[string]string{"zone": "red"}
+		labels := []core.Label{}
 
 		Convey("Publish integer metric", func() {
 			metrics := []plugin.PluginMetricType{
-				*plugin.NewPluginMetricType([]string{"foo"}, time.Now(), "127.0.0.1", 99),
+				*plugin.NewPluginMetricType([]string{"foo"}, time.Now(), "127.0.0.1", tags, labels, 99),
 			}
 			buf.Reset()
 			enc := gob.NewEncoder(&buf)
@@ -62,7 +67,7 @@ func TestInfluxPublish(t *testing.T) {
 
 		Convey("Publish float metric", func() {
 			metrics := []plugin.PluginMetricType{
-				*plugin.NewPluginMetricType([]string{"bar"}, time.Now(), "127.0.0.1", 3.141),
+				*plugin.NewPluginMetricType([]string{"bar"}, time.Now(), "127.0.0.1", tags, labels, 3.141),
 			}
 			buf.Reset()
 			enc := gob.NewEncoder(&buf)
@@ -73,7 +78,7 @@ func TestInfluxPublish(t *testing.T) {
 
 		Convey("Publish string metric", func() {
 			metrics := []plugin.PluginMetricType{
-				*plugin.NewPluginMetricType([]string{"qux"}, time.Now(), "127.0.0.1", "bar"),
+				*plugin.NewPluginMetricType([]string{"qux"}, time.Now(), "127.0.0.1", tags, labels, "bar"),
 			}
 			buf.Reset()
 			enc := gob.NewEncoder(&buf)
@@ -84,7 +89,7 @@ func TestInfluxPublish(t *testing.T) {
 
 		Convey("Publish boolean metric", func() {
 			metrics := []plugin.PluginMetricType{
-				*plugin.NewPluginMetricType([]string{"baz"}, time.Now(), "127.0.0.1", true),
+				*plugin.NewPluginMetricType([]string{"baz"}, time.Now(), "127.0.0.1", tags, labels, true),
 			}
 			buf.Reset()
 			enc := gob.NewEncoder(&buf)
@@ -95,8 +100,8 @@ func TestInfluxPublish(t *testing.T) {
 
 		Convey("Publish multiple metrics", func() {
 			metrics := []plugin.PluginMetricType{
-				*plugin.NewPluginMetricType([]string{"foo"}, time.Now(), "127.0.0.1", 101),
-				*plugin.NewPluginMetricType([]string{"bar"}, time.Now(), "127.0.0.1", 5.789),
+				*plugin.NewPluginMetricType([]string{"foo"}, time.Now(), "127.0.0.1", tags, labels, 101),
+				*plugin.NewPluginMetricType([]string{"bar"}, time.Now(), "127.0.0.1", tags, labels, 5.789),
 			}
 			buf.Reset()
 			enc := gob.NewEncoder(&buf)
