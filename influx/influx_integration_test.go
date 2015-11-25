@@ -27,9 +27,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/intelsdi-x/pulse/control/plugin"
-	"github.com/intelsdi-x/pulse/core"
-	"github.com/intelsdi-x/pulse/core/ctypes"
+	"github.com/intelsdi-x/snap/control/plugin"
+	"github.com/intelsdi-x/snap/core"
+	"github.com/intelsdi-x/snap/core/ctypes"
 
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -37,10 +37,10 @@ import (
 func TestInfluxPublish(t *testing.T) {
 	config := make(map[string]ctypes.ConfigValue)
 
-	Convey("Pulse Plugin InfluxDB integration testing with Influx", t, func() {
+	Convey("snap plugin InfluxDB integration testing with Influx", t, func() {
 		var buf bytes.Buffer
 
-		config["host"] = ctypes.ConfigValueStr{Value: os.Getenv("PULSE_INFLUXDB_HOST")}
+		config["host"] = ctypes.ConfigValueStr{Value: os.Getenv("SNAP_INFLUXDB_HOST")}
 		config["port"] = ctypes.ConfigValueInt{Value: 8086}
 		config["user"] = ctypes.ConfigValueStr{Value: "root"}
 		config["password"] = ctypes.ConfigValueStr{Value: "root"}
@@ -61,7 +61,7 @@ func TestInfluxPublish(t *testing.T) {
 			buf.Reset()
 			enc := gob.NewEncoder(&buf)
 			enc.Encode(metrics)
-			err := ip.Publish(plugin.PulseGOBContentType, buf.Bytes(), *cfg)
+			err := ip.Publish(plugin.SnapGOBContentType, buf.Bytes(), *cfg)
 			So(err, ShouldBeNil)
 		})
 
@@ -72,7 +72,7 @@ func TestInfluxPublish(t *testing.T) {
 			buf.Reset()
 			enc := gob.NewEncoder(&buf)
 			enc.Encode(metrics)
-			err := ip.Publish(plugin.PulseGOBContentType, buf.Bytes(), *cfg)
+			err := ip.Publish(plugin.SnapGOBContentType, buf.Bytes(), *cfg)
 			So(err, ShouldBeNil)
 		})
 
@@ -83,7 +83,7 @@ func TestInfluxPublish(t *testing.T) {
 			buf.Reset()
 			enc := gob.NewEncoder(&buf)
 			enc.Encode(metrics)
-			err := ip.Publish(plugin.PulseGOBContentType, buf.Bytes(), *cfg)
+			err := ip.Publish(plugin.SnapGOBContentType, buf.Bytes(), *cfg)
 			So(err, ShouldBeNil)
 		})
 
@@ -94,7 +94,7 @@ func TestInfluxPublish(t *testing.T) {
 			buf.Reset()
 			enc := gob.NewEncoder(&buf)
 			enc.Encode(metrics)
-			err := ip.Publish(plugin.PulseGOBContentType, buf.Bytes(), *cfg)
+			err := ip.Publish(plugin.SnapGOBContentType, buf.Bytes(), *cfg)
 			So(err, ShouldBeNil)
 		})
 
@@ -106,7 +106,7 @@ func TestInfluxPublish(t *testing.T) {
 			buf.Reset()
 			enc := gob.NewEncoder(&buf)
 			enc.Encode(metrics)
-			err := ip.Publish(plugin.PulseGOBContentType, buf.Bytes(), *cfg)
+			err := ip.Publish(plugin.SnapGOBContentType, buf.Bytes(), *cfg)
 			So(err, ShouldBeNil)
 		})
 

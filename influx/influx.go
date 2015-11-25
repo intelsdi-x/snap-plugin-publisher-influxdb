@@ -28,22 +28,22 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 
-	"github.com/intelsdi-x/pulse/control/plugin"
-	"github.com/intelsdi-x/pulse/control/plugin/cpolicy"
-	"github.com/intelsdi-x/pulse/core/ctypes"
+	"github.com/intelsdi-x/snap/control/plugin"
+	"github.com/intelsdi-x/snap/control/plugin/cpolicy"
+	"github.com/intelsdi-x/snap/core/ctypes"
 
 	"github.com/influxdb/influxdb/client"
 )
 
 const (
 	name       = "influx"
-	version    = 6
+	version    = 7
 	pluginType = plugin.PublisherPluginType
 )
 
 // Meta returns a plugin meta data
 func Meta() *plugin.PluginMeta {
-	return plugin.NewPluginMeta(name, version, pluginType, []string{plugin.PulseGOBContentType}, []string{plugin.PulseGOBContentType})
+	return plugin.NewPluginMeta(name, version, pluginType, []string{plugin.SnapGOBContentType}, []string{plugin.SnapGOBContentType})
 }
 
 //NewInfluxPublisher returns an instance of the InfuxDB publisher
@@ -94,7 +94,7 @@ func (f *influxPublisher) Publish(contentType string, content []byte, config map
 	var metrics []plugin.PluginMetricType
 
 	switch contentType {
-	case plugin.PulseGOBContentType:
+	case plugin.SnapGOBContentType:
 		dec := gob.NewDecoder(bytes.NewBuffer(content))
 		if err := dec.Decode(&metrics); err != nil {
 			logger.WithFields(log.Fields{
@@ -116,7 +116,7 @@ func (f *influxPublisher) Publish(contentType string, content []byte, config map
 		URL:       *u,
 		Username:  config["user"].(ctypes.ConfigValueStr).Value,
 		Password:  config["password"].(ctypes.ConfigValueStr).Value,
-		UserAgent: "pulse-publisher",
+		UserAgent: "snap-publisher",
 	}
 
 	con, err := client.NewClient(conf)

@@ -1,5 +1,5 @@
 {
-	"ImportPath": "github.com/intelsdi-x/pulse-plugin-publisher-influxdb",
+	"ImportPath": "github.com/intelsdi-x/snap-plugin-publisher-influxdb",
 	"GoVersion": "go1.4.2",
 	"Deps": [
 		{
@@ -32,9 +32,9 @@
 			"Rev": "eb2e83c1df892d2c9ad5a3c85672da30be585dfd"
 		},
 		{
-			"ImportPath": "github.com/intelsdi-x/pulse",
-			"Comment": "v0.8.0-beta-40-g07a7cb9",
-			"Rev": "07a7cb909ace19fe1253477081dcedc60044cce8"
+			"ImportPath": "github.com/intelsdi-x/snap",
+			"Comment": "v0.8.0-beta-114-g0c65a13",
+			"Rev": "0c65a1359589a71aded24150402627210efb70d2"
 		}
 	]
 }
