@@ -90,18 +90,20 @@ func (f *influxPublisher) GetConfigPolicy() (*cpolicy.ConfigPolicy, error) {
 // Publish publishes metric data to influxdb
 // currently only 0.9 version of influxdb are supported
 func (f *influxPublisher) Publish(contentType string, content []byte, config map[string]ctypes.ConfigValue) error {
-	logger := log.New()
+	logger := getLogger(config)
 	var metrics []plugin.PluginMetricType
 
 	switch contentType {
 	case plugin.PulseGOBContentType:
 		dec := gob.NewDecoder(bytes.NewBuffer(content))
 		if err := dec.Decode(&metrics); err != nil {
-			logger.Printf("Error decoding: error=%v content=%v", err, content)
+			logger.WithFields(log.Fields{
+				"err": err,
+			}).Error("decoding error")
 			return err
 		}
 	default:
-		logger.Printf("Error unknown content type '%v'", contentType)
+		logger.Errorf("unknown content type '%v'", contentType)
 		return fmt.Errorf("Unknown content type '%s'", contentType)
 	}
 
@@ -122,20 +124,33 @@ func (f *influxPublisher) Publish(contentType string, content []byte, config map
 		logger.Fatal(err)
 	}
 
-	dur, ver, err := con.Ping()
+	_, ver, err := con.Ping()
 	if err != nil {
-		logger.Printf("ERROR publishing %v to %v with %v %v", metrics, config, ver, dur)
+		logger.WithFields(log.Fields{
+			"metrics":      metrics,
+			"config":       config,
+			"influxdb-ver": ver,
+		}).Error("influxdb connection failed")
 		handleErr(err)
 	}
 
 	pts := make([]client.Point, len(metrics))
 	for i, m := range metrics {
+		ns := m.Namespace()
+		tags := map[string]string{"source": m.Source()}
+		if m.Labels_ != nil {
+			for _, label := range m.Labels_ {
+				tags[label.Name] = m.Namespace()[label.Index]
+				ns = append(m.Namespace()[:label.Index], m.Namespace()[label.Index+1:]...)
+			}
+		}
+		for k, v := range m.Tags() {
+			tags[k] = v
+		}
 		pts[i] = client.Point{
-			Measurement: strings.Join(m.Namespace(), "/"),
+			Measurement: strings.Join(ns, "/"),
 			Time:        m.Timestamp(),
-			Tags: map[string]string{
-				"source": m.Source(),
-			},
+			Tags:        tags,
 			Fields: map[string]interface{}{
 				"value": m.Data(),
 			},
@@ -151,9 +166,14 @@ func (f *influxPublisher) Publish(contentType string, content []byte, config map
 
 	_, err = con.Write(bps)
 	if err != nil {
-		logger.Printf("Error: '%s' printing points: %+v", err.Error(), bps)
+		logger.WithFields(log.Fields{
+			"err":          err,
+			"batch-points": bps,
+		}).Error("publishing failed")
 	}
-	//logger.Printf("writing %+v \n", bps)
+	logger.WithFields(log.Fields{
+		"batch-points": bps,
+	}).Debug("publishing metrics")
 
 	return nil
 }
@@ -162,4 +182,60 @@ func handleErr(e error) {
 	if e != nil {
 		panic(e)
 	}
+}
+
+func getLogger(config map[string]ctypes.ConfigValue) *log.Entry {
+	logger := log.WithFields(log.Fields{
+		"plugin-name":    name,
+		"plugin-version": version,
+		"plugin-type":    pluginType.String(),
+	})
+
+	// default
+	log.SetLevel(log.WarnLevel)
+
+	if debug, ok := config["debug"]; ok {
+		switch v := debug.(type) {
+		case ctypes.ConfigValueBool:
+			if v.Value {
+				log.SetLevel(log.DebugLevel)
+				return logger
+			}
+		default:
+			logger.WithFields(log.Fields{
+				"field":         "debug",
+				"type":          v,
+				"expected type": "ctypes.ConfigValueBool",
+			}).Error("invalid config type")
+		}
+	}
+
+	if loglevel, ok := config["log-level"]; ok {
+		switch v := loglevel.(type) {
+		case ctypes.ConfigValueStr:
+			switch strings.ToLower(v.Value) {
+			case "warn":
+				log.SetLevel(log.WarnLevel)
+			case "error":
+				log.SetLevel(log.ErrorLevel)
+			case "debug":
+				log.SetLevel(log.DebugLevel)
+			case "info":
+				log.SetLevel(log.InfoLevel)
+			default:
+				log.WithFields(log.Fields{
+					"value":             strings.ToLower(v.Value),
+					"acceptable values": "warn, error, debug, info",
+				}).Warn("invalid config value")
+			}
+		default:
+			logger.WithFields(log.Fields{
+				"field":         "log-level",
+				"type":          v,
+				"expected type": "ctypes.ConfigValueStr",
+			}).Error("invalid config type")
+		}
+	}
+
+	return logger
 }
