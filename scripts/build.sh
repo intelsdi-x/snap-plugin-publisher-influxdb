@@ -21,12 +21,12 @@
 GITVERSION=`git describe --always`
 SOURCEDIR=$1
 BUILDDIR=$SOURCEDIR/build
-PLUGIN=`echo $SOURCEDIR | grep -oh "pulse-.*"`
+PLUGIN=`echo $SOURCEDIR | grep -oh "snap-plugin-.*"`
 ROOTFS=$BUILDDIR/rootfs
 BUILDCMD='go build -a -ldflags "-w"'
 
 echo
-echo "****  Pulse Plugin Build  ****"
+echo "**** snap plugin build  ****"
 echo
 
 # Disable CGO for builds
@@ -40,6 +40,6 @@ mkdir -p $ROOTFS
 
 # Build plugin
 echo "Source Dir = $SOURCEDIR"
-echo "Building Pulse Plugin: $PLUGIN"
+echo "Building snap plugin: $PLUGIN"
 $BUILDCMD -o $ROOTFS/$PLUGIN
 

@@ -102,6 +102,6 @@ if [[ $TEST_SUITE == "unit" ]]; then
 elif [[ $TEST_SUITE == "integration" ]]; then
 	cd scripts/docker/$INFLUX_VERSION; docker build -t intelsdi-x/influxdb:$INFLUX_VERSION .
         docker run -d --net=host -e PRE_CREATE_DB="test" intelsdi-x/influxdb:$INFLUX_VERSION	
-	cd $PULSE_PLUGIN_SOURCE
-	PULSE_INFLUXDB_HOST=127.0.0.1 go test -v --tags=integration ./...
+	cd $SNAP_PLUGIN_SOURCE
+	SNAP_INFLUXDB_HOST=127.0.0.1 go test -v --tags=integration ./...
 fi
