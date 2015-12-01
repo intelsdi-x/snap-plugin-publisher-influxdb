@@ -33,8 +33,8 @@
 		},
 		{
 			"ImportPath": "github.com/intelsdi-x/snap",
-			"Comment": "v0.8.0-beta-114-g0c65a13",
-			"Rev": "0c65a1359589a71aded24150402627210efb70d2"
+			"Comment": "v0.9.0-beta",
+			"Rev": "e62bd3b4bb1e5044bad152d9a90bf8bbfa881e8f"
 		}
 	]
 }
