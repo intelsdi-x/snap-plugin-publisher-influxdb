@@ -81,10 +81,7 @@ There's more than one way to give back, from examples to blogs to code updates. 
 [snap](http://github.com:intelsdi-x/snap), along with this plugin, is an Open Source software released under the Apache 2.0 [License](LICENSE).
 
 ## Acknowledgements
-List authors, co-authors and anyone you'd like to mention
-
 * Author: [Justin Guidroz](https://github.com/geauxvirtual)
-* Author: [Emily Gu](https://github.com/candysmurf)
 * Author: [Joel Cooklin](https://github.com/jcooklin)
 
 And **thank you!** Your contribution, through code and participation, is incredibly important to us.
