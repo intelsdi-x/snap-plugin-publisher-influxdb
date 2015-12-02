@@ -4,7 +4,7 @@
 
 This plugin supports pushing metrics into an InfluxDB instance.
 
-It's used in the [snap framework](http://github.com:intelsdi-x/snap).
+It's used in the [snap framework](http://github.com/intelsdi-x/snap).
 
 1. [Getting Started](#getting-started)
   * [System Requirements](#system-requirements)
