@@ -12,6 +12,10 @@
 			"Comment": "v0.9.4",
 			"Rev": "d81618c57fae135d9b1c1a8fb3403722ceb29354"
 		},
+	    {
+			"ImportPath": "github.com/intelsdi-x/snap-plugin-utilities",
+			"Rev": "f6ebcc7cdefd9a74e256187e638ad6fa62487629"
+		},
 		{
 			"ImportPath": "github.com/influxdb/influxdb/tsdb",
 			"Comment": "v0.9.4",
