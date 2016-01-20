@@ -144,7 +144,7 @@ func (f *influxPublisher) Publish(contentType string, content []byte, config map
 				tags[label.Name] = m.Namespace()[label.Index]
 				ns = str.Filter(
 					ns,
-					func (n string) bool {
+					func(n string) bool {
 						return n != label.Name
 					},
 				)
