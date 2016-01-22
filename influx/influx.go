@@ -33,6 +33,7 @@ import (
 	"github.com/intelsdi-x/snap/core/ctypes"
 
 	"github.com/influxdb/influxdb/client"
+	str "github.com/intelsdi-x/snap-plugin-utilities/strings"
 )
 
 const (
@@ -141,7 +142,12 @@ func (f *influxPublisher) Publish(contentType string, content []byte, config map
 		if m.Labels_ != nil {
 			for _, label := range m.Labels_ {
 				tags[label.Name] = m.Namespace()[label.Index]
-				ns = append(m.Namespace()[:label.Index], m.Namespace()[label.Index+1:]...)
+				ns = str.Filter(
+					ns,
+					func(n string) bool {
+						return n != label.Name
+					},
+				)
 			}
 		}
 		for k, v := range m.Tags() {

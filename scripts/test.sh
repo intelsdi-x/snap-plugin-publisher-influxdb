@@ -35,6 +35,7 @@ if [[ $TEST_SUITE == "unit" ]]; then
 	go get golang.org/x/tools/cmd/vet
 	go get golang.org/x/tools/cmd/goimports
 	go get github.com/smartystreets/goconvey/convey
+	go get github.com/smartystreets/assertions
 	go get golang.org/x/tools/cmd/cover
 	
 	COVERALLS_TOKEN=t47LG6BQsfLwb9WxB56hXUezvwpED6D11
@@ -100,6 +101,8 @@ if [[ $TEST_SUITE == "unit" ]]; then
 	#     done
 	# fi
 elif [[ $TEST_SUITE == "integration" ]]; then
+	go get github.com/smartystreets/goconvey/convey
+	go get github.com/smartystreets/assertions
 	cd scripts/docker/$INFLUX_VERSION; docker build -t intelsdi-x/influxdb:$INFLUX_VERSION .
         docker run -d --net=host -e PRE_CREATE_DB="test" intelsdi-x/influxdb:$INFLUX_VERSION	
 	cd $SNAP_PLUGIN_SOURCE
