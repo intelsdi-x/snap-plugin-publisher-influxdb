@@ -141,7 +141,6 @@ func (f *influxPublisher) Publish(contentType string, content []byte, config map
 		tags := map[string]string{"source": m.Source()}
 		if m.Labels_ != nil {
 			for _, label := range m.Labels_ {
-				tags[label.Name] = m.Namespace()[label.Index]
 				ns = str.Filter(
 					ns,
 					func(n string) bool {
@@ -155,7 +154,7 @@ func (f *influxPublisher) Publish(contentType string, content []byte, config map
 		}
 		pts[i] = client.Point{
 			Measurement: strings.Join(ns, "/"),
-			Time:        m.Timestamp(),
+			Time:        m.Timestamp().Unix(),
 			Tags:        tags,
 			Fields: map[string]interface{}{
 				"value": m.Data(),
