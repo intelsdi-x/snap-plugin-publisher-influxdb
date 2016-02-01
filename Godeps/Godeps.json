@@ -1,7 +1,19 @@
 {
 	"ImportPath": "github.com/intelsdi-x/snap-plugin-publisher-influxdb",
 	"GoVersion": "go1.5",
+	"Packages": [
+		"./..."
+	],
 	"Deps": [
+		{
+			"ImportPath": "github.com/Sirupsen/logrus",
+			"Comment": "v0.8.7-55-gf7f79f7",
+			"Rev": "f7f79f729e0fbe2fcc061db48a9ba0263f588252"
+		},
+		{
+			"ImportPath": "github.com/gopherjs/gopherjs/js",
+			"Rev": "4b53e1bddba0e2f734514aeb6c02db652f4c6fe8"
+		},
 		{
 			"ImportPath": "github.com/influxdb/influxdb/client",
 			"Comment": "v0.10.0-beta1-9-gc64de20",
@@ -11,10 +23,6 @@
 			"ImportPath": "github.com/influxdb/influxdb/models",
 			"Comment": "v0.10.0-beta1-9-gc64de20",
 			"Rev": "c64de2088ede091abbb042cf8e3ecc6e0418a2dc"
-		},
-	    {
-			"ImportPath": "github.com/intelsdi-x/snap-plugin-utilities",
-			"Rev": "f6ebcc7cdefd9a74e256187e638ad6fa62487629"
 		},
 		{
 			"ImportPath": "github.com/influxdb/influxdb/pkg/escape",
@@ -26,8 +34,51 @@
 			"Rev": "f6ebcc7cdefd9a74e256187e638ad6fa62487629"
 		},
 		{
+			"ImportPath": "github.com/intelsdi-x/snap/control/plugin",
+			"Comment": "v0.11.0-beta",
+			"Rev": "42d9567651258bba268d94701eb171458e459645"
+		},
+		{
+			"ImportPath": "github.com/intelsdi-x/snap/core",
+			"Comment": "v0.11.0-beta",
+			"Rev": "42d9567651258bba268d94701eb171458e459645"
+		},
+		{
+			"ImportPath": "github.com/intelsdi-x/snap/pkg/ctree",
+			"Comment": "v0.11.0-beta",
+			"Rev": "42d9567651258bba268d94701eb171458e459645"
+		},
+		{
+			"ImportPath": "github.com/intelsdi-x/snap/pkg/schedule",
+			"Comment": "v0.11.0-beta",
+			"Rev": "42d9567651258bba268d94701eb171458e459645"
+		},
+		{
+			"ImportPath": "github.com/intelsdi-x/snap/scheduler/wmap",
+			"Comment": "v0.11.0-beta",
+			"Rev": "42d9567651258bba268d94701eb171458e459645"
+		},
+		{
+			"ImportPath": "github.com/jtolds/gls",
+			"Rev": "8ddce2a84170772b95dd5d576c48d517b22cac63"
+		},
+		{
+			"ImportPath": "github.com/smartystreets/assertions",
+			"Comment": "1.5.0-409-g5de9043",
+			"Rev": "5de9043ec1a39cc97edc838ef7236538a55b30a4"
+		},
+		{
+			"ImportPath": "github.com/smartystreets/goconvey/convey",
+			"Comment": "1.6.0-10-g995f5b2",
+			"Rev": "995f5b2e021c69b8b028ba6d0b05c1dd500783db"
+		},
+		{
+			"ImportPath": "golang.org/x/sys/unix",
+			"Rev": "eb2c74142fd19a79b3f237334c7384d5167b1b46"
+		},
+		{
 			"ImportPath": "gopkg.in/yaml.v2",
-			"Rev": "c1cd2254a6dd314c9d73c338c12688c9325d85c6"
+			"Rev": "f7716cbe52baa25d2e9b0d0da546fcf909fc16b4"
 		}
 	]
 }
