@@ -38,7 +38,7 @@ import (
 
 const (
 	name       = "influx"
-	version    = 8
+	version    = 9
 	pluginType = plugin.PublisherPluginType
 )
 
