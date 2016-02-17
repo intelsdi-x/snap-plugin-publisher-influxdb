@@ -24,7 +24,6 @@ import (
 	"encoding/gob"
 	"fmt"
 	"net/url"
-	"reflect"
 	"strings"
 
 	log "github.com/Sirupsen/logrus"
@@ -41,6 +40,7 @@ const (
 	name       = "influx"
 	version    = 9
 	pluginType = plugin.PublisherPluginType
+	maxInt64   = ^uint64(0) / 2
 )
 
 // Meta returns a plugin meta data
@@ -155,12 +155,15 @@ func (f *influxPublisher) Publish(contentType string, content []byte, config map
 			tags[k] = v
 		}
 
-		var data interface{} = m.Data()
 		// NOTE: uint64 is specifically not supported by influxdb client due to potential overflow
 		//without convertion of uint64 to int64, data with uint64 type will be saved as strings in influx database
-		if reflect.TypeOf(m.Data()).Kind() == reflect.Uint64 {
-			convertedData := int64(m.Data().(uint64))
-			data = convertedData
+		data := m.Data()
+		v, ok := m.Data().(uint64)
+		if ok {
+			data = int64(v)
+			if v > maxInt64 {
+				log.Errorf("Overflow during conversion uint64 to int64, value after conversion to int64: %d, desired uint64 value: %d ", data, v)
+			}
 		}
 
 		pts[i] = client.Point{
