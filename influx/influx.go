@@ -24,6 +24,7 @@ import (
 	"encoding/gob"
 	"fmt"
 	"net/url"
+	"reflect"
 	"strings"
 
 	log "github.com/Sirupsen/logrus"
@@ -153,12 +154,21 @@ func (f *influxPublisher) Publish(contentType string, content []byte, config map
 		for k, v := range m.Tags() {
 			tags[k] = v
 		}
+
+		var data interface{} = m.Data()
+		// NOTE: uint64 is specifically not supported by influxdb client due to potential overflow
+		//without convertion of uint64 to int64, data with uint64 type will be saved as strings in influx database
+		if reflect.TypeOf(m.Data()).Kind() == reflect.Uint64 {
+			convertedData := int64(m.Data().(uint64))
+			data = convertedData
+		}
+
 		pts[i] = client.Point{
 			Measurement: strings.Join(ns, "/"),
 			Time:        m.Timestamp(),
 			Tags:        tags,
 			Fields: map[string]interface{}{
-				"value": m.Data(),
+				"value": data,
 			},
 			Precision: "s",
 		}
