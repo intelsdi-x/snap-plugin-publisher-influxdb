@@ -40,6 +40,7 @@ const (
 	name       = "influx"
 	version    = 9
 	pluginType = plugin.PublisherPluginType
+	maxInt64   = ^uint64(0) / 2
 )
 
 // Meta returns a plugin meta data
@@ -153,12 +154,24 @@ func (f *influxPublisher) Publish(contentType string, content []byte, config map
 		for k, v := range m.Tags() {
 			tags[k] = v
 		}
+
+		// NOTE: uint64 is specifically not supported by influxdb client due to potential overflow
+		//without convertion of uint64 to int64, data with uint64 type will be saved as strings in influx database
+		data := m.Data()
+		v, ok := m.Data().(uint64)
+		if ok {
+			data = int64(v)
+			if v > maxInt64 {
+				log.Errorf("Overflow during conversion uint64 to int64, value after conversion to int64: %d, desired uint64 value: %d ", data, v)
+			}
+		}
+
 		pts[i] = client.Point{
 			Measurement: strings.Join(ns, "/"),
 			Time:        m.Timestamp(),
 			Tags:        tags,
 			Fields: map[string]interface{}{
-				"value": m.Data(),
+				"value": data,
 			},
 			Precision: "s",
 		}
