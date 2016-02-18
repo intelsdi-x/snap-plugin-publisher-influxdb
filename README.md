@@ -33,6 +33,10 @@ Support Matrix
 - InfluxDB Plugin: v6 -> InfluxDB Version >= 0.9.1 -> snap version 0.8.0-beta
 - InfluxDB Plugin: v7 -> InfluxDB Version >= 0.9.1 -> snap version 0.8.0-beta-114 and greater
 
+### Known Limitation
+
+* InfluxDB (tested with InfluxDB 0.10.0) does not support uint64 as type of data. Metrics with uint64 type are converted to int64 by snap publisher plugin. uint64 values higher than maximum int64 value are converted to negative value and saved in InfluxDB. Overflow cases are logged.
+
 ### Installation
 
 #### Download InfluxDB plugin binary:
