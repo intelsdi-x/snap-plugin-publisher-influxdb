@@ -15,19 +15,19 @@
 			"Rev": "4b53e1bddba0e2f734514aeb6c02db652f4c6fe8"
 		},
 		{
-			"ImportPath": "github.com/influxdb/influxdb/client",
-			"Comment": "v0.10.0-beta1-9-gc64de20",
-			"Rev": "c64de2088ede091abbb042cf8e3ecc6e0418a2dc"
+			"ImportPath": "github.com/influxdb/influxdb/client/v2",
+			"Comment": "v0.10.1",
+			"Rev": "v0.10.1"
 		},
 		{
 			"ImportPath": "github.com/influxdb/influxdb/models",
-			"Comment": "v0.10.0-beta1-9-gc64de20",
-			"Rev": "c64de2088ede091abbb042cf8e3ecc6e0418a2dc"
+			"Comment": "v0.10.1",
+			"Rev": "v0.10.1"
 		},
 		{
 			"ImportPath": "github.com/influxdb/influxdb/pkg/escape",
-			"Comment": "v0.10.0-beta1-9-gc64de20",
-			"Rev": "c64de2088ede091abbb042cf8e3ecc6e0418a2dc"
+			"Comment": "v0.10.1",
+			"Rev": "v0.10.1"
 		},
 		{
 			"ImportPath": "github.com/intelsdi-x/snap-plugin-utilities/strings",

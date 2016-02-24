@@ -106,5 +106,9 @@ elif [[ $TEST_SUITE == "integration" ]]; then
 	cd scripts/docker/$INFLUX_VERSION; docker build -t intelsdi-x/influxdb:$INFLUX_VERSION .
         docker run -d --net=host -e PRE_CREATE_DB="test" intelsdi-x/influxdb:$INFLUX_VERSION	
 	cd $SNAP_PLUGIN_SOURCE
-	SNAP_INFLUXDB_HOST=127.0.0.1 go test -v --tags=integration ./...
+    # If nothing is specified (e.g. NOT docker-machine), then set the host to localhost
+    if [ -z "$SNAP_INFLUXDB_HOST" ]; then
+        SNAP_INFLUXDB_HOST=127.0.0.1
+    fi
+	go test -v --tags=integration ./...
 fi

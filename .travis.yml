@@ -15,6 +15,7 @@ env:
     - TEST=unit
     - TEST=integration INFLUX_VERSION=v0.9.1
     - TEST=integration INFLUX_VERSION=v0.9.4
+    - TEST=integration INFLUX_VERSION=v0.10.1
 install:
 - export TMPDIR=$HOME/tmp
 - mkdir -p $TMPDIR
