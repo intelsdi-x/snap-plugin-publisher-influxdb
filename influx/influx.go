@@ -37,10 +37,11 @@ import (
 )
 
 const (
-	name       = "influx"
-	version    = 10
-	pluginType = plugin.PublisherPluginType
-	maxInt64   = ^uint64(0) / 2
+	name                      = "influx"
+	version                   = 11
+	pluginType                = plugin.PublisherPluginType
+	maxInt64                  = ^uint64(0) / 2
+	defaultTimestampPrecision = "s"
 )
 
 // Meta returns a plugin meta data
@@ -173,7 +174,7 @@ func (f *influxPublisher) Publish(contentType string, content []byte, config map
 			Fields: map[string]interface{}{
 				"value": data,
 			},
-			Precision: "s",
+			Precision: defaultTimestampPrecision,
 		}
 	}
 
@@ -181,6 +182,7 @@ func (f *influxPublisher) Publish(contentType string, content []byte, config map
 		Points:          pts,
 		Database:        config["database"].(ctypes.ConfigValueStr).Value,
 		RetentionPolicy: "default",
+		Precision:       defaultTimestampPrecision,
 	}
 
 	_, err = con.Write(bps)
