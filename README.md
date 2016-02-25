@@ -66,8 +66,94 @@ This builds the plugin in `/build/rootfs/`
 ## Documentation
 << @TODO
 
+###Configuration fields in task manifest for InfluxDB plugin
+* **host** - InfluxDB host
+* **port** - InfluxDB port
+* **user** - InfluxDB user
+* **password** - InfluxDB password
+* **publish_timestamp** - optional parameter to define if plugin shall publish metric collection timestamp (default - parameter set to true) or not (parameter set to false). In the latter case timestamp will be set by InfluxDB. 
+
 ### Examples
-<< @TODO
+Example of use snap-collector-mock1 collector plugin and InfluxDB publisher plugin to save collecting data in InfluxDB.
+
+This is done from the snap directory.
+
+In one terminal window, open the snap daemon (in this case with logging set to 1 and trust disabled):
+```
+$ $SNAP_PATH/bin/snapd -l 1 -t 0
+```
+
+In another terminal window:
+Load snap-collector-mock1 collector plugin
+```
+$ $SNAP_PATH/bin/snapctl plugin load snap-collector-mock1
+```
+
+Load snap-plugin-publisher-influxdb publisher plugin
+```
+$ $SNAP_PATH/bin/snapctl plugin load snap-plugin-publisher-influxdb
+```
+
+See available metrics for your system
+```
+$ $SNAP_PATH/bin/snapctl metric list
+```
+
+Create a task manifest file (e.g. `task.json`):
+```json
+{
+    "version": 1,
+    "schedule": {
+        "type": "simple",
+        "interval": "10s"
+    },
+    "workflow": {
+        "collect": {
+            "metrics": {
+                "/intel/mock/foo": {},
+                "/intel/mock/bar": {},
+                "/intel/mock/*/baz": {}
+            },
+             "config": {
+                "/intel/mock": {
+                    "user": "root",
+                    "password": "secret"
+                }
+            },
+            "process": null,
+            "publish": [
+                {
+                    "plugin_name": "influx",
+                    "config": {
+                        "host": "host",
+                        "port": 8086,
+                        "database": "database",
+                        "user": "user",
+                        "password": "password",
+                        "publish_timestamp": true
+                    }
+                }
+            ]
+        }
+    }
+}
+```
+Create task:
+```
+$ $SNAP_PATH/bin/snapctl task create -t task.json
+Using task manifest to create task
+Task created
+ID: ae65bdc2-550a-4d0f-80a5-0b4c5aa98143
+Name: Task-ae65bdc2-550a-4d0f-80a5-0b4c5aa98143
+State: Running
+```
+
+Stop task:
+```
+$ $SNAP_PATH/bin/snapctl task stop ae65bdc2-550a-4d0f-80a5-0b4c5aa98143
+Task stopped:
+ID: ae65bdc2-550a-4d0f-80a5-0b4c5aa98143
+```
 
 ### Roadmap
 
