@@ -13,9 +13,8 @@ env:
     - SNAP_PLUGIN_SOURCE=/home/travis/gopath/src/github.com/intelsdi-x/snap-plugin-publisher-influxdb
   matrix:
     - TEST=unit
-    - TEST=integration INFLUX_VERSION=v0.9.1
-    - TEST=integration INFLUX_VERSION=v0.9.4
-    - TEST=integration INFLUX_VERSION=v0.10.1
+    - TEST=integration INFLUX_VERSION=v0.9.4 SNAP_INFLUXDB_HOST=127.0.0.1
+    - TEST=integration INFLUX_VERSION=v0.10.1 SNAP_INFLUXDB_HOST=127.0.0.1
 install:
 - export TMPDIR=$HOME/tmp
 - mkdir -p $TMPDIR

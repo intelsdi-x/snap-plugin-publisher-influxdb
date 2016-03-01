@@ -32,6 +32,7 @@ Support Matrix
 - InfluxDB Plugin: v4 -> InfluxDB Version >= 0.9.1 -> snap version 0.3.x
 - InfluxDB Plugin: v6 -> InfluxDB Version >= 0.9.1 -> snap version 0.8.0-beta
 - InfluxDB Plugin: v7 -> InfluxDB Version >= 0.9.1 -> snap version 0.8.0-beta-114 and greater
+- InfluxDB Plugin: v12 -> InfluxDB Version >= 0.9.3 -> snap version 0.8.0-beta-114 and greater
 
 ### Known Limitation
 

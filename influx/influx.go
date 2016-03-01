@@ -113,7 +113,7 @@ func (f *influxPublisher) Publish(contentType string, content []byte, config map
 	u, err := url.Parse(fmt.Sprintf("http://%s:%d", config["host"].(ctypes.ConfigValueStr).Value, config["port"].(ctypes.ConfigValueInt).Value))
 	if err != nil {
 		logger.Fatal(err)
-        return err
+		return err
 	}
 
 	con, err := client.NewHTTPClient(client.HTTPConfig{
@@ -124,7 +124,7 @@ func (f *influxPublisher) Publish(contentType string, content []byte, config map
 
 	if err != nil {
 		logger.Fatal(err)
-        return err
+		return err
 	}
 
 	//Set up batch points
@@ -171,7 +171,7 @@ func (f *influxPublisher) Publish(contentType string, content []byte, config map
 				"batch-points": bps.Points(),
 				"point":        pt,
 			}).Error("Publishing failed. Problem creating data point")
-            return err
+			return err
 		}
 		bps.AddPoint(pt)
 	}
@@ -182,7 +182,7 @@ func (f *influxPublisher) Publish(contentType string, content []byte, config map
 			"err":          err,
 			"batch-points": bps,
 		}).Error("publishing failed")
-        return err
+		return err
 	}
 	logger.WithFields(log.Fields{
 		"batch-points": bps.Points(),
