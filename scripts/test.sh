@@ -104,7 +104,8 @@ elif [[ $TEST_SUITE == "integration" ]]; then
 	go get github.com/smartystreets/goconvey/convey
 	go get github.com/smartystreets/assertions
 	cd scripts/docker/$INFLUX_VERSION; docker build -t intelsdi-x/influxdb:$INFLUX_VERSION .
-        docker run -d --net=host -e PRE_CREATE_DB="test" intelsdi-x/influxdb:$INFLUX_VERSION	
+    docker_id=$(docker run -d --net=host -e PRE_CREATE_DB="test" intelsdi-x/influxdb:$INFLUX_VERSION)	
 	cd $SNAP_PLUGIN_SOURCE
 	SNAP_INFLUXDB_HOST=$SNAP_INFLUXDB_HOST go test -v --tags=integration ./...
+    docker stop $docker_id
 fi

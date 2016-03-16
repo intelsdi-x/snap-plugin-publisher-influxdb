@@ -74,13 +74,14 @@ fi
 
 # Pre create database on the initiation of the container
 API_URL="http://localhost:8086"
+INFLUX_PATH=/usr/bin
 if [ -n "${PRE_CREATE_DB}" ]; then
     echo "=> About to create the following database: ${PRE_CREATE_DB}"
     if [ -f "/data/.pre_db_created" ]; then
         echo "=> Database had been created before, skipping ..."
     else
         echo "=> Starting InfluxDB ..."
-        exec /opt/influxdb/influxd -config=${CONFIG_FILE} &
+        exec $INFLUX_PATH/influxd -config=${CONFIG_FILE} &
         PASS=${INFLUXDB_INIT_PWD:-root}
         arr=$(echo ${PRE_CREATE_DB} | tr ";" "\n")
 
@@ -97,7 +98,7 @@ if [ -n "${PRE_CREATE_DB}" ]; then
         for x in $arr
         do
             echo "=> Creating database: ${x}"
-            /opt/influxdb/influx -host=localhost -port=8086 -username=root -password="${PASS}" -execute="create database \"${x}\""
+            $INFLUX_PATH/influx -host=localhost -port=8086 -username=root -password="${PASS}" -execute="create database \"${x}\""
         done
         echo ""
 
@@ -111,4 +112,4 @@ fi
 
 echo "=> Starting InfluxDB ..."
 
-exec /opt/influxdb/influxd -config=${CONFIG_FILE}
+exec $INFLUX_PATH/influxd -config=${CONFIG_FILE}

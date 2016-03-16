@@ -8,6 +8,7 @@ go:
 before_install:
 - go get github.com/tools/godep
 - if [ ! -d $SNAP_PLUGIN_SOURCE ]; then mkdir -p $HOME/gopath/src/github.com/intelsdi-x; ln -s $TRAVIS_BUILD_DIR $SNAP_PLUGIN_SOURCE; fi # CI for forks not from intelsdi-x
+- docker pull tutum/curl:trusty #This prevents race conditions from all of the tasks running
 env:
   global:
     - SNAP_PLUGIN_SOURCE=/home/travis/gopath/src/github.com/intelsdi-x/snap-plugin-publisher-influxdb

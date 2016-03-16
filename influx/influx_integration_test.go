@@ -23,6 +23,7 @@ package influx
 import (
 	"bytes"
 	"encoding/gob"
+	"net/http"
 	"os"
 	"testing"
 	"time"
@@ -33,6 +34,23 @@ import (
 
 	. "github.com/smartystreets/goconvey/convey"
 )
+
+func init() {
+	//Do a ping to make sure the docker image actually came up. Otherwise this can fail Travis builds
+	for i := 0; i < 3; i++ {
+		resp, err := http.Get("http://" + os.Getenv("SNAP_INFLUXDB_HOST") + ":8086/ping")
+		if err != nil || resp.StatusCode != 204 {
+			//Try again after 3 seconds
+			time.Sleep(3 * time.Second)
+		} else {
+			//Give the run.sh time to create the test database
+			time.Sleep(5 * time.Second)
+			return
+		}
+	}
+	//If we got here, we failed to get to the server
+	panic("Unable to connect to Influx host. Aborting test.")
+}
 
 func TestInfluxPublish(t *testing.T) {
 	config := make(map[string]ctypes.ConfigValue)
