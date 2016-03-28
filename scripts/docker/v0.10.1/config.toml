@@ -1,6 +1,4 @@
-bind-address = "0.0.0.0"
-port = 8086
-reporting-disabled = false
+reporting-disabled = true
 
 [meta]
   dir = "/var/opt/influxdb/meta"
@@ -26,7 +24,7 @@ reporting-disabled = false
 [opentsdb]
   enabled = false
 
-[udp]
+[[udp]]
   enabled = false
 
 [broker]
@@ -41,6 +39,20 @@ reporting-disabled = false
   retention-check-enabled = true
   retention-check-period = "10m0s"
   retention-create-period = "45m0s"
+  max-wal-size = 104857600
+  wal-flush-interval = "10m"
+  wal-partition-flush-delay = "2s"
+  wal-dir = "/data/wal"
+  wal-enable-logging = true
+
+[http]
+  enabled = true
+  bind-address = "0.0.0.0:8086"
+  auth-enabled = false
+  log-enabled = true
+  write-tracing = false
+  pprof-enabled = false
+  https-enabled = false
 
 [snapshot]
   enabled = false

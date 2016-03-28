@@ -32,13 +32,13 @@ import (
 	"github.com/intelsdi-x/snap/control/plugin/cpolicy"
 	"github.com/intelsdi-x/snap/core/ctypes"
 
-	"github.com/influxdb/influxdb/client"
+	"github.com/influxdb/influxdb/client/v2"
 	str "github.com/intelsdi-x/snap-plugin-utilities/strings"
 )
 
 const (
 	name                      = "influx"
-	version                   = 11
+	version                   = 12
 	pluginType                = plugin.PublisherPluginType
 	maxInt64                  = ^uint64(0) / 2
 	defaultTimestampPrecision = "s"
@@ -112,33 +112,29 @@ func (f *influxPublisher) Publish(contentType string, content []byte, config map
 
 	u, err := url.Parse(fmt.Sprintf("http://%s:%d", config["host"].(ctypes.ConfigValueStr).Value, config["port"].(ctypes.ConfigValueInt).Value))
 	if err != nil {
-		handleErr(err)
+		logger.Fatal(err)
+		return err
 	}
 
-	conf := client.Config{
-		URL:       *u,
-		Username:  config["user"].(ctypes.ConfigValueStr).Value,
-		Password:  config["password"].(ctypes.ConfigValueStr).Value,
-		UserAgent: "snap-publisher",
-	}
+	con, err := client.NewHTTPClient(client.HTTPConfig{
+		Addr:     u.String(),
+		Username: config["user"].(ctypes.ConfigValueStr).Value,
+		Password: config["password"].(ctypes.ConfigValueStr).Value,
+	})
 
-	con, err := client.NewClient(conf)
 	if err != nil {
 		logger.Fatal(err)
+		return err
 	}
 
-	_, ver, err := con.Ping()
-	if err != nil {
-		logger.WithFields(log.Fields{
-			"metrics":      metrics,
-			"config":       config,
-			"influxdb-ver": ver,
-		}).Error("influxdb connection failed")
-		handleErr(err)
-	}
+	//Set up batch points
+	bps, _ := client.NewBatchPoints(client.BatchPointsConfig{
+		Database:        config["database"].(ctypes.ConfigValueStr).Value,
+		RetentionPolicy: "default",
+		Precision:       defaultTimestampPrecision,
+	})
 
-	pts := make([]client.Point, len(metrics))
-	for i, m := range metrics {
+	for _, m := range metrics {
 		ns := m.Namespace()
 		tags := map[string]string{"source": m.Source()}
 		if m.Labels_ != nil {
@@ -166,34 +162,30 @@ func (f *influxPublisher) Publish(contentType string, content []byte, config map
 				log.Errorf("Overflow during conversion uint64 to int64, value after conversion to int64: %d, desired uint64 value: %d ", data, v)
 			}
 		}
-
-		pts[i] = client.Point{
-			Measurement: strings.Join(ns, "/"),
-			Time:        m.Timestamp(),
-			Tags:        tags,
-			Fields: map[string]interface{}{
-				"value": data,
-			},
-			Precision: defaultTimestampPrecision,
+		pt, err := client.NewPoint(strings.Join(ns, "/"), tags, map[string]interface{}{
+			"value": data,
+		}, m.Timestamp())
+		if err != nil {
+			logger.WithFields(log.Fields{
+				"err":          err,
+				"batch-points": bps.Points(),
+				"point":        pt,
+			}).Error("Publishing failed. Problem creating data point")
+			return err
 		}
+		bps.AddPoint(pt)
 	}
 
-	bps := client.BatchPoints{
-		Points:          pts,
-		Database:        config["database"].(ctypes.ConfigValueStr).Value,
-		RetentionPolicy: "default",
-		Precision:       defaultTimestampPrecision,
-	}
-
-	_, err = con.Write(bps)
+	err = con.Write(bps)
 	if err != nil {
 		logger.WithFields(log.Fields{
 			"err":          err,
 			"batch-points": bps,
 		}).Error("publishing failed")
+		return err
 	}
 	logger.WithFields(log.Fields{
-		"batch-points": bps,
+		"batch-points": bps.Points(),
 	}).Debug("publishing metrics")
 
 	return nil
