@@ -27,13 +27,12 @@ import (
 	"strings"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/influxdata/influxdb/client/v2"
 
 	"github.com/intelsdi-x/snap/control/plugin"
 	"github.com/intelsdi-x/snap/control/plugin/cpolicy"
+	"github.com/intelsdi-x/snap/core"
 	"github.com/intelsdi-x/snap/core/ctypes"
-
-	"github.com/influxdb/influxdb/client/v2"
-	str "github.com/intelsdi-x/snap-plugin-utilities/strings"
 )
 
 const (
@@ -94,7 +93,7 @@ func (f *influxPublisher) GetConfigPolicy() (*cpolicy.ConfigPolicy, error) {
 // currently only 0.9 version of influxdb are supported
 func (f *influxPublisher) Publish(contentType string, content []byte, config map[string]ctypes.ConfigValue) error {
 	logger := getLogger(config)
-	var metrics []plugin.PluginMetricType
+	var metrics []plugin.MetricType
 
 	switch contentType {
 	case plugin.SnapGOBContentType:
@@ -135,20 +134,32 @@ func (f *influxPublisher) Publish(contentType string, content []byte, config map
 	})
 
 	for _, m := range metrics {
-		ns := m.Namespace()
-		tags := map[string]string{"source": m.Source()}
-		if m.Labels_ != nil {
-			for _, label := range m.Labels_ {
-				tags[label.Name] = m.Namespace()[label.Index]
-				ns = str.Filter(
-					ns,
-					func(n string) bool {
-						return n != label.Name
-					},
-				)
+		tags := map[string]string{}
+		ns := m.Namespace().Strings()
+
+		isDynamic, indexes := m.Namespace().IsDynamic()
+		if isDynamic {
+			for _, i := range indexes {
+				// Removing "data"" from the namespace and create a tag for it
+				ns = append(ns[:i], ns[i+1:]...)
+				tags[m.Namespace()[i].Name] = m.Namespace()[i].Value
 			}
 		}
+
+		// Add "unit"" if we do not already have a "unit" tag
+		if _, ok := m.Tags()["unit"]; !ok {
+			tags["unit"] = m.Unit()
+		}
+
+		// Process the tags for this metric
 		for k, v := range m.Tags() {
+			// Convert the standard tag describing where the plugin is running to "source"
+			if k == core.STD_TAG_PLUGIN_RUNNING_ON {
+				// Unless the "source" tag is already being used
+				if _, ok := m.Tags()["source"]; !ok {
+					k = "source"
+				}
+			}
 			tags[k] = v
 		}
 

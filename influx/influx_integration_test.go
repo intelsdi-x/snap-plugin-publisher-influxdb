@@ -70,11 +70,10 @@ func TestInfluxPublish(t *testing.T) {
 		cp, _ := ip.GetConfigPolicy()
 		cfg, _ := cp.Get([]string{""}).Process(config)
 		tags := map[string]string{"zone": "red"}
-		labels := []core.Label{}
 
 		Convey("Publish integer metric", func() {
-			metrics := []plugin.PluginMetricType{
-				*plugin.NewPluginMetricType([]string{"foo"}, time.Now(), "127.0.0.1", tags, labels, 99),
+			metrics := []plugin.MetricType{
+				*plugin.NewMetricType(core.NewNamespace("foo"), time.Now(), tags, "some unit", 99),
 			}
 			buf.Reset()
 			enc := gob.NewEncoder(&buf)
@@ -84,8 +83,8 @@ func TestInfluxPublish(t *testing.T) {
 		})
 
 		Convey("Publish float metric", func() {
-			metrics := []plugin.PluginMetricType{
-				*plugin.NewPluginMetricType([]string{"bar"}, time.Now(), "127.0.0.1", tags, labels, 3.141),
+			metrics := []plugin.MetricType{
+				*plugin.NewMetricType(core.NewNamespace("bar"), time.Now(), tags, "some unit", 3.141),
 			}
 			buf.Reset()
 			enc := gob.NewEncoder(&buf)
@@ -95,8 +94,8 @@ func TestInfluxPublish(t *testing.T) {
 		})
 
 		Convey("Publish string metric", func() {
-			metrics := []plugin.PluginMetricType{
-				*plugin.NewPluginMetricType([]string{"qux"}, time.Now(), "127.0.0.1", tags, labels, "bar"),
+			metrics := []plugin.MetricType{
+				*plugin.NewMetricType(core.NewNamespace("qux"), time.Now(), tags, "some unit", "bar"),
 			}
 			buf.Reset()
 			enc := gob.NewEncoder(&buf)
@@ -106,8 +105,8 @@ func TestInfluxPublish(t *testing.T) {
 		})
 
 		Convey("Publish boolean metric", func() {
-			metrics := []plugin.PluginMetricType{
-				*plugin.NewPluginMetricType([]string{"baz"}, time.Now(), "127.0.0.1", tags, labels, true),
+			metrics := []plugin.MetricType{
+				*plugin.NewMetricType(core.NewNamespace("baz"), time.Now(), tags, "some unit", true),
 			}
 			buf.Reset()
 			enc := gob.NewEncoder(&buf)
@@ -117,9 +116,9 @@ func TestInfluxPublish(t *testing.T) {
 		})
 
 		Convey("Publish multiple metrics", func() {
-			metrics := []plugin.PluginMetricType{
-				*plugin.NewPluginMetricType([]string{"foo"}, time.Now(), "127.0.0.1", tags, labels, 101),
-				*plugin.NewPluginMetricType([]string{"bar"}, time.Now(), "127.0.0.1", tags, labels, 5.789),
+			metrics := []plugin.MetricType{
+				*plugin.NewMetricType(core.NewNamespace("foo"), time.Now(), tags, "some unit", 101),
+				*plugin.NewMetricType(core.NewNamespace("bar"), time.Now(), tags, "some unit", 5.789),
 			}
 			buf.Reset()
 			enc := gob.NewEncoder(&buf)
