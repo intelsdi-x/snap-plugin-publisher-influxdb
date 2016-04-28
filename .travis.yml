@@ -12,6 +12,7 @@ before_install:
 env:
   global:
     - SNAP_PLUGIN_SOURCE=/home/travis/gopath/src/github.com/intelsdi-x/snap-plugin-publisher-influxdb
+    - GO15VENDOREXPERIMENT=1
   matrix:
     - TEST=unit
     - TEST=integration INFLUX_VERSION=v0.9.4 SNAP_INFLUXDB_HOST=127.0.0.1
