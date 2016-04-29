@@ -25,6 +25,8 @@ import (
 	"fmt"
 	"net/url"
 	"strings"
+	"sync"
+	"time"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/influxdata/influxdb/client/v2"
@@ -42,6 +44,21 @@ const (
 	maxInt64                  = ^uint64(0) / 2
 	defaultTimestampPrecision = "s"
 )
+
+var (
+	// The maximum time a connection can sit around unused.
+	maxConnectionIdle = time.Minute * 30
+	// How frequently idle connections are checked
+	watchConnctionWait = time.Minute * 15
+	// Our connection pool
+	connPool = make(map[string]*clientConnection)
+	// Mutex for synchronizing connection pool changes
+	m = &sync.Mutex{}
+)
+
+func init() {
+	go watchConnections()
+}
 
 // Meta returns a plugin meta data
 func Meta() *plugin.PluginMeta {
@@ -89,6 +106,23 @@ func (f *influxPublisher) GetConfigPolicy() (*cpolicy.ConfigPolicy, error) {
 	return cp, nil
 }
 
+func watchConnections() {
+	for {
+		time.Sleep(watchConnctionWait)
+		for k, c := range connPool {
+
+			if time.Now().Sub(c.LastUsed) > maxConnectionIdle {
+				m.Lock()
+				// Close the connection
+				c.close()
+				// Remove from the pool
+				delete(connPool, k)
+				m.Unlock()
+			}
+		}
+	}
+}
+
 // Publish publishes metric data to influxdb
 // currently only 0.9 version of influxdb are supported
 func (f *influxPublisher) Publish(contentType string, content []byte, config map[string]ctypes.ConfigValue) error {
@@ -109,20 +143,9 @@ func (f *influxPublisher) Publish(contentType string, content []byte, config map
 		return fmt.Errorf("Unknown content type '%s'", contentType)
 	}
 
-	u, err := url.Parse(fmt.Sprintf("http://%s:%d", config["host"].(ctypes.ConfigValueStr).Value, config["port"].(ctypes.ConfigValueInt).Value))
+	con, err := selectClientConnection(config)
 	if err != nil {
-		logger.Fatal(err)
-		return err
-	}
-
-	con, err := client.NewHTTPClient(client.HTTPConfig{
-		Addr:     u.String(),
-		Username: config["user"].(ctypes.ConfigValueStr).Value,
-		Password: config["password"].(ctypes.ConfigValueStr).Value,
-	})
-
-	if err != nil {
-		logger.Fatal(err)
+		logger.Error(err)
 		return err
 	}
 
@@ -187,12 +210,16 @@ func (f *influxPublisher) Publish(contentType string, content []byte, config map
 		bps.AddPoint(pt)
 	}
 
-	err = con.Write(bps)
+	err = con.write(bps)
 	if err != nil {
 		logger.WithFields(log.Fields{
 			"err":          err,
 			"batch-points": bps,
 		}).Error("publishing failed")
+		// Remove connction from pool since something is wrong
+		m.Lock()
+		delete(connPool, con.Key)
+		m.Unlock()
 		return err
 	}
 	logger.WithFields(log.Fields{
@@ -262,4 +289,73 @@ func getLogger(config map[string]ctypes.ConfigValue) *log.Entry {
 	}
 
 	return logger
+}
+
+type clientConnection struct {
+	Key      string
+	Conn     *client.Client
+	LastUsed time.Time
+}
+
+// Map the batch points write into client.Client
+func (c *clientConnection) write(bps client.BatchPoints) error {
+	return (*c.Conn).Write(bps)
+}
+
+// Map the close function into client.Client
+func (c *clientConnection) close() error {
+	return (*c.Conn).Close()
+}
+
+func selectClientConnection(config map[string]ctypes.ConfigValue) (*clientConnection, error) {
+	// This is not an ideal way to get the logger but deferring solving this for a later date
+	logger := getLogger(config)
+
+	u, err := url.Parse(fmt.Sprintf("http://%s:%d", config["host"].(ctypes.ConfigValueStr).Value, config["port"].(ctypes.ConfigValueInt).Value))
+	if err != nil {
+		return nil, err
+	}
+
+	// Pool changes need to be safe (read & write) since the plugin can be called concurrently by snapd.
+	m.Lock()
+	defer m.Unlock()
+
+	user := config["user"].(ctypes.ConfigValueStr).Value
+	pass := config["password"].(ctypes.ConfigValueStr).Value
+	db := config["database"].(ctypes.ConfigValueStr).Value
+	key := connectionKey(u, user, db)
+
+	// Do we have a existing client?
+	if connPool[u.String()] == nil {
+		// create one and add to the pool
+		con, err := client.NewHTTPClient(client.HTTPConfig{
+			Addr:     u.String(),
+			Username: user,
+			Password: pass,
+		})
+
+		if err != nil {
+			return nil, err
+		}
+
+		cCon := &clientConnection{
+			Key:      key,
+			Conn:     &con,
+			LastUsed: time.Now(),
+		}
+		// Add to the pool
+		connPool[key] = cCon
+
+		logger.Debug("Opening new InfluxDB connection[", user, "@", db, " ", u.String(), "]")
+		return connPool[key], nil
+	}
+	// Update when it was accessed
+	connPool[key].LastUsed = time.Now()
+	// Return it
+	logger.Debug("Using open InfluxDB connection[", user, "@", db, " ", u.String(), "]")
+	return connPool[key], nil
+}
+
+func connectionKey(u *url.URL, user, db string) string {
+	return fmt.Sprintf("%s:%s:%s", u.String(), user, db)
 }
