@@ -42,4 +42,3 @@ mkdir -p $ROOTFS
 echo "Source Dir = $SOURCEDIR"
 echo "Building snap plugin: $PLUGIN"
 $BUILDCMD -o $ROOTFS/$PLUGIN
-

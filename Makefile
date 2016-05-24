@@ -14,14 +14,23 @@
 #WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #See the License for the specific language governing permissions and
 #limitations under the License.
+TEST_TYPE ?= small
 
 default:
 	$(MAKE) deps
 	$(MAKE) all
 deps:
-	bash -c "godep restore"
+	bash -c "./scripts/deps.sh"
 test:
-	bash -c "./scripts/test.sh $(TEST)"
+	bash -c "./scripts/test.sh $(TEST_TYPE)"
+test-legacy:
+	bash -c "true"
+test-small:
+	bash -c "./scripts/test.sh small"
+test-medium:
+	bash -c "./scripts/test.sh medium"
+test-large:
+	bash -c "./scripts/test.sh large"
 check:
 	$(MAKE) test
 all:

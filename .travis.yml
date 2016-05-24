@@ -1,29 +1,23 @@
-sudo: required
-services:
-- docker
+---
+sudo: false
 language: go
 go:
-- 1.5.3
-- 1.6
+  - 1.5.4
+  - 1.6.2
 before_install:
-- go get github.com/tools/godep
-- if [ ! -d $SNAP_PLUGIN_SOURCE ]; then mkdir -p $HOME/gopath/src/github.com/intelsdi-x; ln -s $TRAVIS_BUILD_DIR $SNAP_PLUGIN_SOURCE; fi # CI for forks not from intelsdi-x
-- docker pull tutum/curl:trusty #This prevents race conditions from all of the tasks running
+  - "[[ -d $SNAP_PLUGIN_SOURCE ]] || mkdir -p $ORG_PATH && ln -s $TRAVIS_BUILD_DIR $SNAP_PLUGIN_SOURCE" # CI for forks not from intelsdi-x
 env:
   global:
-    - SNAP_PLUGIN_SOURCE=/home/travis/gopath/src/github.com/intelsdi-x/snap-plugin-publisher-influxdb
+    - ORG_PATH=/home/travis/gopath/src/github.com/intelsdi-x
+    - SNAP_PLUGIN_SOURCE=/home/travis/gopath/src/github.com/${TRAVIS_REPO_SLUG}
     - GO15VENDOREXPERIMENT=1
   matrix:
-    - TEST=unit
-    - TEST=integration INFLUX_VERSION=v0.9.4 SNAP_INFLUXDB_HOST=127.0.0.1
-    - TEST=integration INFLUX_VERSION=v0.10.1 SNAP_INFLUXDB_HOST=127.0.0.1
+    - TEST_TYPE=small
 install:
-- export TMPDIR=$HOME/tmp
-- mkdir -p $TMPDIR
-- cd $SNAP_PLUGIN_SOURCE # change dir into source
-- make deps
+  - cd $SNAP_PLUGIN_SOURCE # change dir into source
+  - make deps
 script:
-- make check TEST=$TEST 2>&1 # Run test suite
+  - make check 2>&1 # Run test suite
 notifications:
   slack:
     secure: VkbZLIc2RH8yf3PtIAxUNPdAu3rQQ7yQx0GcK124JhbEnZGaHyK615V0rbG7HcVmYKGPdB0cXqZiLBDKGqGKb2zR1NepOe1nF03jxGSpPq8jIFeEXSJGEYGL34ScDzZZGuG6qwbjFcXiW5lqn6t8igzp7v2+URYBaZo5ktCS2xY=
