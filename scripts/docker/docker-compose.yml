@@ -1,0 +1,19 @@
+version: '2'
+services:
+  golang:
+    container_name: golang_${GOLANGVER}
+    image: intelsdi/gvm:latest
+    volumes:
+      - ${PLUGIN_SRC}:/snap-plugin-publisher-influxdb
+    links:
+      - influxdb
+  influxdb:
+    container_name: infludb_${INFLUXDB_VERSION}
+    build: ./${INFLUXDB_VERSION}
+    environment:
+      PRE_CREATE_DB: "test"
+    expose:
+      - "8083"
+      - "8086"
+      - "8090"
+      - "8099"
