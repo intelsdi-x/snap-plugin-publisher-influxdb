@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/intelsdi-x/snap-plugin-publisher-influxdb.svg?token=FkGfhS15Ai2yp19KAw41&branch=master)](https://travis-ci.com/intelsdi-x/snap-plugin-publisher-influxdb)
+[![Build Status](https://travis-ci.org/intelsdi-x/snap-plugin-publisher-influxdb.svg?branch=master)](https://travis-ci.org/intelsdi-x/snap-plugin-publisher-influxdb)
 
 # snap publisher plugin - InfluxDB 
 
@@ -33,6 +33,7 @@ Support Matrix
 - InfluxDB Plugin: v6 -> InfluxDB Version >= 0.9.1 -> snap version 0.8.0-beta
 - InfluxDB Plugin: v7 -> InfluxDB Version >= 0.9.1 -> snap version 0.8.0-beta-114 and greater
 - InfluxDB Plugin: v12 -> InfluxDB Version >= 0.9.3 -> snap version 0.8.0-beta-114 and greater
+- InfluxDB Plugin: v12 -> InfluxDB Version >= 0.9.4 -> snap version 0.13.0-beta and greater
 
 ### Known Limitation
 
