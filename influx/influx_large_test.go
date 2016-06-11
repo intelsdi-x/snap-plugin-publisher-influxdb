@@ -127,5 +127,28 @@ func TestInfluxPublish(t *testing.T) {
 			So(err, ShouldBeNil)
 		})
 
+		Convey("Publish dynamic metrics", func() {
+			dynamicNS1 := core.NewNamespace("foo").
+				AddDynamicElement("dynamic", "dynamic elem").
+				AddStaticElement("bar")
+			dynamicNS2 := core.NewNamespace("foo").
+				AddDynamicElement("dynamic_one", "dynamic element one").
+				AddDynamicElement("dynamic_two", "dynamic element two").
+				AddStaticElement("baz")
+
+			dynamicNS1[1].Value = "fooval"
+			dynamicNS2[1].Value = "barval"
+			dynamicNS2[2].Value = "bazval"
+
+			metrics := []plugin.MetricType{
+				*plugin.NewMetricType(dynamicNS1, time.Now(), tags, "", 123),
+				*plugin.NewMetricType(dynamicNS2, time.Now(), tags, "", 456),
+			}
+			buf.Reset()
+			enc := gob.NewEncoder(&buf)
+			enc.Encode(metrics)
+			err := ip.Publish(plugin.SnapGOBContentType, buf.Bytes(), *cfg)
+			So(err, ShouldBeNil)
+		})
 	})
 }
