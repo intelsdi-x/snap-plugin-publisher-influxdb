@@ -39,7 +39,7 @@ import (
 
 const (
 	name                      = "influx"
-	version                   = 12
+	version                   = 13
 	pluginType                = plugin.PublisherPluginType
 	maxInt64                  = ^uint64(0) / 2
 	defaultTimestampPrecision = "s"
@@ -162,10 +162,16 @@ func (f *influxPublisher) Publish(contentType string, content []byte, config map
 
 		isDynamic, indexes := m.Namespace().IsDynamic()
 		if isDynamic {
-			for _, i := range indexes {
-				// Removing "data"" from the namespace and create a tag for it
-				ns = append(ns[:i], ns[i+1:]...)
-				tags[m.Namespace()[i].Name] = m.Namespace()[i].Value
+			for i, j := range indexes {
+				// The second return value from IsDynamic(), in this case `indexes`, is the index of
+				// the dynamic element in the unmodified namespace. However, here we're deleting
+				// elements, which is problematic when the number of dynamic elements in a namespace is
+				// greater than 1. Therefore, we subtract i (the loop iteration) from j
+				// (the original index) to compensate.
+				//
+				// Remove "data" from the namespace and create a tag for it
+				ns = append(ns[:j-i], ns[j-i+1:]...)
+				tags[m.Namespace()[j].Name] = m.Namespace()[j].Value
 			}
 		}
 

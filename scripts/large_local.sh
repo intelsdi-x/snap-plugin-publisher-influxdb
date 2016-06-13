@@ -34,7 +34,8 @@ docker_id=$(docker run -d -e PRE_CREATE_DB="test" -p 8083:8083 -p 8086:8086 --ex
 _go_get github.com/smartystreets/goconvey/convey
 _go_get github.com/smartystreets/assertions
 
-export SNAP_INFLUXDB_HOST=127.0.0.1
+set +e  # don't bail out of the script without stopping/removing the docker container
+export SNAP_INFLUXDB_HOST=${SNAP_INFLUXDB_HOST:-127.0.0.1}
 _go_test
 _debug "stopping docker image: ${docker_id}"
 docker stop "${docker_id}" > /dev/null
