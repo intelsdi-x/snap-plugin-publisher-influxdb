@@ -2,7 +2,7 @@
 http://www.apache.org/licenses/LICENSE-2.0.txt
 
 
-Copyright 2016 Intel Corporation
+Copyright 2015-2016 Intel Corporation
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -39,10 +39,11 @@ import (
 
 const (
 	name                      = "influx"
-	version                   = 13
+	version                   = 14
 	pluginType                = plugin.PublisherPluginType
 	maxInt64                  = ^uint64(0) / 2
 	defaultTimestampPrecision = "s"
+	publishTimestamp          = "publish_timestamp"
 )
 
 var (
@@ -202,9 +203,17 @@ func (f *influxPublisher) Publish(contentType string, content []byte, config map
 				log.Errorf("Overflow during conversion uint64 to int64, value after conversion to int64: %d, desired uint64 value: %d ", data, v)
 			}
 		}
+
+		//check if timestamp source is defined in plugin configuration and get timestamps which were assigned for metrics if needed
+		var timestamp time.Time
+		timestampSource, ok := config[publishTimestamp]
+		if (!ok) || (ok && timestampSource.(ctypes.ConfigValueBool).Value) {
+			timestamp = m.Timestamp()
+		}
+
 		pt, err := client.NewPoint(strings.Join(ns, "/"), tags, map[string]interface{}{
 			"value": data,
-		}, m.Timestamp())
+		}, timestamp)
 		if err != nil {
 			logger.WithFields(log.Fields{
 				"err":          err,

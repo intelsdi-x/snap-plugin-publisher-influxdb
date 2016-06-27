@@ -4,7 +4,7 @@
 http://www.apache.org/licenses/LICENSE-2.0.txt
 
 
-Copyright 2015 Intel Corporation
+Copyright 2015-2016 Intel Corporation
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -69,6 +69,27 @@ func TestInfluxDBPlugin(t *testing.T) {
 			Convey("So testConfig processing should return no errors", func() {
 				So(errs.HasErrors(), ShouldBeFalse)
 			})
+
+			testConfig["publish_timestamp"] = ctypes.ConfigValueBool{Value: true}
+			cfg, errs = configPolicy.Get([]string{""}).Process(testConfig)
+
+			Convey("So config policy should process testConfig and return a config with publish_timestamp set on true", func() {
+				So(cfg, ShouldNotBeNil)
+			})
+			Convey("So testConfig processing should return no errors with publish_timestamp set on true", func() {
+				So(errs.HasErrors(), ShouldBeFalse)
+			})
+
+			testConfig["publish_timestamp"] = ctypes.ConfigValueBool{Value: false}
+			cfg, errs = configPolicy.Get([]string{""}).Process(testConfig)
+
+			Convey("So config policy should process testConfig and return a config with publish_timestamp set on false", func() {
+				So(cfg, ShouldNotBeNil)
+			})
+			Convey("So testConfig processing should return no errors with publish_timestamp set on false", func() {
+				So(errs.HasErrors(), ShouldBeFalse)
+			})
+
 			testConfig["port"] = ctypes.ConfigValueStr{Value: "8086"}
 			cfg, errs = configPolicy.Get([]string{""}).Process(testConfig)
 			Convey("So config policy should not return a config after processing invalid testConfig", func() {

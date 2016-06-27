@@ -1,0 +1,36 @@
+{
+    "version": 1,
+    "schedule": {
+        "type": "simple",
+        "interval": "10s"
+    },
+    "workflow": {
+        "collect": {
+            "metrics": {
+                "/intel/mock/foo": {},
+                "/intel/mock/bar": {},
+                "/intel/mock/*/baz": {}
+            },
+             "config": {
+                "/intel/mock": {
+                    "user": "root",
+                    "password": "secret"
+                }
+            },
+            "process": null,
+            "publish": [
+                {
+                    "plugin_name": "influx",
+                    "config": {
+                        "host": "host",
+                        "port": 8086,
+                        "database": "database",
+                        "user": "user",
+                        "password": "password",
+                        "publish_timestamp": true
+                    }
+                }
+            ]
+        }
+    }
+}
