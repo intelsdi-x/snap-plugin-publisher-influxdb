@@ -332,7 +332,7 @@ func selectClientConnection(config map[string]ctypes.ConfigValue) (*clientConnec
 	key := connectionKey(u, user, db)
 
 	// Do we have a existing client?
-	if connPool[u.String()] == nil {
+	if connPool[key] == nil {
 		// create one and add to the pool
 		con, err := client.NewHTTPClient(client.HTTPConfig{
 			Addr:     u.String(),
