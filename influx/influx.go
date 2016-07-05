@@ -39,7 +39,7 @@ import (
 
 const (
 	name                      = "influx"
-	version                   = 14
+	version                   = 15
 	pluginType                = plugin.PublisherPluginType
 	maxInt64                  = ^uint64(0) / 2
 	defaultTimestampPrecision = "s"
@@ -224,6 +224,7 @@ func (f *influxPublisher) Publish(contentType string, content []byte, config map
 		}).Error("publishing failed")
 		// Remove connction from pool since something is wrong
 		m.Lock()
+		con.close()
 		delete(connPool, con.Key)
 		m.Unlock()
 		return err
