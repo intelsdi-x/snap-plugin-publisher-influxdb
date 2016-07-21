@@ -150,5 +150,16 @@ func TestInfluxPublish(t *testing.T) {
 			err := ip.Publish(plugin.SnapGOBContentType, buf.Bytes(), *cfg)
 			So(err, ShouldBeNil)
 		})
+
+		Convey("Publish nil value of metric", func() {
+			metrics := []plugin.MetricType{
+				*plugin.NewMetricType(core.NewNamespace("baz"), time.Now(), tags, "some unit", nil),
+			}
+			buf.Reset()
+			enc := gob.NewEncoder(&buf)
+			enc.Encode(metrics)
+			err := ip.Publish(plugin.SnapGOBContentType, buf.Bytes(), *cfg)
+			So(err, ShouldBeNil)
+		})
 	})
 }

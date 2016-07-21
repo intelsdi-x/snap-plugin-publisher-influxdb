@@ -192,9 +192,16 @@ func (f *influxPublisher) Publish(contentType string, content []byte, config map
 			tags[k] = v
 		}
 
+		data := m.Data()
+
+		//publishing of nil value causes errors
+		if data == nil {
+			log.Errorf("Received nil value of metric, this metric is not published, namespace: %s, timestamp: %s", m.Namespace().String(), m.Timestamp().String())
+			continue
+		}
+
 		// NOTE: uint64 is specifically not supported by influxdb client due to potential overflow
 		//without convertion of uint64 to int64, data with uint64 type will be saved as strings in influx database
-		data := m.Data()
 		v, ok := m.Data().(uint64)
 		if ok {
 			data = int64(v)
