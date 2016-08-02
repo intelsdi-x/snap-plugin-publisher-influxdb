@@ -27,27 +27,15 @@ __proj_dir="$(dirname "$__dir")"
 # shellcheck source=scripts/common.sh
 . "${__dir}/common.sh"
 
-plugin_name=${__proj_dir##*/}
-build_dir="${__proj_dir}/build"
-go_build=(go build -ldflags "-w")
+build_path="${__proj_dir}/build"
+git_sha=$(git log --pretty=format:"%H" -1)
+git_path="${build_path}/${TRAVIS_BRANCH}/${git_sha}"
+latest_path="${build_path}/${TRAVIS_BRANCH}/latest"
 
-_info "project path: ${__proj_dir}"
-_info "plugin name: ${plugin_name}"
+mkdir -p "${git_path}"
+mkdir -p "${latest_path}"
 
-# Disable CGO for builds
-export CGO_ENABLED=0
-
-# rebuild binaries:
-_debug "removing: ${build_dir:?}/*"
-rm -rf "${build_dir:?}/"*
-mkdir -p "${build_dir}/linux/x86_64"
-mkdir -p "${build_dir}/darwin/x86_64"
-
-arch="x86_64"
-
-_info "building plugin: ${plugin_name}"
-export GOOS=linux
-"${go_build[@]}" -o "${build_dir}/${GOOS}/${arch}/${plugin_name}" . || exit 1
-
-export GOOS=darwin
-"${go_build[@]}" -o "${build_dir}/${GOOS}/${arch}/${plugin_name}" . || exit 1
+_info "copying binary to ${git_path}"
+cp "${build_path}/rootfs/"* "${git_path}"
+_info "copying snap binaries to ${latest_path}"
+mv "${build_path}/rootfs/"* "${latest_path}"
