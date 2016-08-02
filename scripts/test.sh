@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash 
 
 #http://www.apache.org/licenses/LICENSE-2.0.txt
 #
@@ -36,7 +36,7 @@ export test_dirs=$(find . -type f -name '*.go' -not -path "./.*" -not -path "*/_
 _debug "script directory ${__dir}"
 _debug "project directory ${__proj_dir}"
 
-[[ "$TEST_TYPE" =~ ^(small|medium|large|legacy)$ ]] || _error "invalid TEST_TYPE (value must be 'small', 'medium', 'large', or 'legacy', recieved:${TEST_TYPE}"
+[[ "$TEST_TYPE" =~ ^(small|medium|large|legacy|build)$ ]] || _error "invalid TEST_TYPE (value must be 'small', 'medium', 'large', or 'legacy', recieved:${TEST_TYPE}"
 
 _gofmt() {
   test -z "$(gofmt -l -d $(find . -type f -name '*.go' -not -path "./vendor/*") | tee /dev/stderr)"

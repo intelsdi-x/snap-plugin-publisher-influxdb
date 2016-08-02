@@ -14,6 +14,6 @@ __proj_dir="$(dirname "$__dir")"
 _go_get github.com/smartystreets/goconvey/convey
 _go_get github.com/smartystreets/assertions
 
-export TEST_TYPE="${TEST_TYPE:-"large"}"
+export TEST_TYPE="${TEST_TYPE:-"medium"}"
 export SNAP_INFLUXDB_HOST="influxdb"
 _go_test

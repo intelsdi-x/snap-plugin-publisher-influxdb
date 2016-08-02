@@ -1,17 +1,21 @@
 version: '2'
 services:
-  golang:
-    container_name: golang_${GOLANGVER}
-    image: intelsdi/gvm:latest
+  main:
+    container_name: main_large
+    image: jcooklin/alpine:latest    
     volumes:
       - ${PLUGIN_SRC}:/snap-plugin-publisher-influxdb
+    command: ["sleep 300"]
     links:
-      - influxdb
+      - influxdb    
   influxdb:
     container_name: infludb_${INFLUXDB_VERSION}
-    build: ./${INFLUXDB_VERSION}
+    build: ./../influxdb/${INFLUXDB_VERSION}
     environment:
       PRE_CREATE_DB: "test"
+    ports:
+      - "8083:8083"
+      - "8086:8086"
     expose:
       - "8083"
       - "8086"
