@@ -10,14 +10,10 @@ services:
       - influxdb       
   influxdb:
     container_name: influxdb
-    image: influxdb:0.13-alpine
-    environment:
-      PRE_CREATE_DB: "test"
+    image: influxdb:0.13-alpine    
     ports:
       - "8083:8083"
       - "8086:8086"
     expose:
       - "8083"
-      - "8086"
-      - "8090"
-      - "8099"
+      - "8086"    

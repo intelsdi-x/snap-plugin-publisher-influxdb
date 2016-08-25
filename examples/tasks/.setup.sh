@@ -16,10 +16,10 @@ if [[ $EXIT_ON_ERROR > 0 ]]; then
 fi
 
 # start the influxdb container
-cd $__dir && docker-compose up -d 
+(cd $__dir && docker-compose up -d) 
 
 # clean up containers on exit
 function finish {
-  cd $__dir && docker-compose down
+  (cd $__dir && docker-compose down)
 }
-trap finish EXIT
+trap finish EXIT INT TERM

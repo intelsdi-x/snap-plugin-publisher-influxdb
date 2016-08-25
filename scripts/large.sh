@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash
 
 set -e
 set -u
@@ -30,7 +30,7 @@ _docker_project () {
 _debug "building docker compose images"
 _docker_project docker-compose build
 _debug "running docker compose images"
-_docker_project docker-compose up -d 
+_docker_project docker-compose up -d
 _debug "running test: ${TEST_TYPE}"
 cd "${docker_folder}"
 
@@ -38,8 +38,9 @@ set +e
 docker-compose exec main bash -c "export INFLUXDB_VERSION=$INFLUXDB_VERSION; export LOG_LEVEL=$LOG_LEVEL; /${__proj_name}/scripts/large_tests.sh" 
 test_res=$?
 set -e
-echo "exit code from large_jenkins $test_res"
+_debug "exit code $test_res"
 _debug "stopping docker compose images"
 _docker_project docker-compose stop
+_debug "removing docker compose images"
 _docker_project docker-compose rm -f
 exit $test_res

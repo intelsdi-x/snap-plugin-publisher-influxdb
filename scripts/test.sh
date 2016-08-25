@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash
 
 #http://www.apache.org/licenses/LICENSE-2.0.txt
 #
@@ -20,6 +20,7 @@
 # Support travis.ci environment matrix:
 TEST_TYPE="${TEST_TYPE:-$1}"
 UNIT_TEST="${UNIT_TEST:-"gofmt goimports go_vet go_test go_cover"}"
+TEST_K8S="${TEST_K8S:-0}"
 
 set -e
 set -u
@@ -69,8 +70,6 @@ test_small() {
   done
 }
 
-_debug "go code directories:
-${test_dirs}"
 
 if [[ $TEST_TYPE == "small" ]]; then
   if [[ -f "${__dir}/small.sh" ]]; then
@@ -86,8 +85,10 @@ elif [[ $TEST_TYPE == "medium" ]]; then
     _info "No medium tests."
   fi
 elif [[ $TEST_TYPE == "large" ]]; then
-  if [[ -f "${__dir}/large.sh" ]]; then
-    . "${__dir}/large.sh"
+  if [[ "${TEST_K8S}" != "0" && -f "$__dir/large_k8s.sh" ]]; then    
+    . "${__dir}/large_k8s.sh"
+  elif [[ -f "${__dir}/large_compose.sh" ]]; then
+    . "${__dir}/large_compose.sh"
   else
     _info "No large tests."
   fi

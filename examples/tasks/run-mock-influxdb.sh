@@ -12,10 +12,10 @@ __proj_name="$(basename $__proj_dir)"
 export PLUGIN_SRC="${__proj_dir}"
 
 # source the common bash script 
-. "${__dir}/../../scripts/common.sh"
+. "${__proj_dir}/scripts/common.sh"
 
 # verifies dependencies and starts influxdb
-. ${__dir}/.setup.sh
+. "${__proj_dir}/examples/tasks/.setup.sh"
 
 # downloads plugins, starts snap, load plugins and start a task
-docker-compose exec main bash -c "PLUGIN_PATH=/etc/snap/plugins BIN_PATH=/usr/local/bin /${__proj_name}/examples/tasks/mock-influxdb.sh && printf \"\n\nhint: type 'snapctl task list'\ntype 'exit' when your done\n\n\" && bash && killall snapd"
+cd "${__proj_dir}/examples/tasks" && docker-compose exec main bash -c "PLUGIN_PATH=/etc/snap/plugins BIN_PATH=/usr/local/bin /${__proj_name}/examples/tasks/mock-influxdb.sh && printf \"\n\nhint: type 'snapctl task list'\ntype 'exit' when your done\n\n\" && bash && killall snapd"
