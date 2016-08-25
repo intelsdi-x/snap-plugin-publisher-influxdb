@@ -1,0 +1,23 @@
+version: '2'
+services:
+  main:
+    container_name: runner
+    image: jcooklin/alpine:latest
+    volumes:
+      - ${PLUGIN_SRC}:/snap-plugin-publisher-influxdb      
+    command: ["sleep 86400"]
+    links:
+      - influxdb       
+  influxdb:
+    container_name: influxdb
+    image: influxdb:0.13-alpine
+    environment:
+      PRE_CREATE_DB: "test"
+    ports:
+      - "8083:8083"
+      - "8086:8086"
+    expose:
+      - "8083"
+      - "8086"
+      - "8090"
+      - "8099"
