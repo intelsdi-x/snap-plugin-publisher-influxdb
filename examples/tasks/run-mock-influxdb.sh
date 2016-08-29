@@ -18,4 +18,4 @@ export PLUGIN_SRC="${__proj_dir}"
 . "${__proj_dir}/examples/tasks/.setup.sh"
 
 # downloads plugins, starts snap, load plugins and start a task
-cd "${__proj_dir}/examples/tasks" && docker-compose exec main bash -c "PLUGIN_PATH=/etc/snap/plugins BIN_PATH=/usr/local/bin /${__proj_name}/examples/tasks/mock-influxdb.sh && printf \"\n\nhint: type 'snapctl task list'\ntype 'exit' when your done\n\n\" && bash && killall snapd"
+cd "${__proj_dir}/examples/tasks" && docker-compose exec main bash -c "PLUGIN_PATH=/etc/snap/plugins /${__proj_name}/examples/tasks/mock-influxdb.sh && printf \"\n\nhint: type 'snapctl task list'\ntype 'exit' when your done\n\n\" && bash"

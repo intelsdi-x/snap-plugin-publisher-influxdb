@@ -18,10 +18,11 @@ spec:
               - containerPort: 8083
               - containerPort: 8086
             - name: main
-              image: jcooklin/alpine:latest
-              imagePullPolicy: "IfNotPresent"
-              command: ["sleep"]
-              args: ["10000"]                
+              image: intelsdi/snap:latest_alpine
+              env:
+                - name: SNAP_VERSION
+                  value: "latest"
+              imagePullPolicy: "IfNotPresent"                               
 
 ---
 apiVersion: v1

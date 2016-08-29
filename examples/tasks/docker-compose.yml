@@ -2,10 +2,11 @@ version: '2'
 services:
   main:
     container_name: runner
-    image: jcooklin/alpine:latest
+    image: intelsdi/snap:latest_alpine
+    environment:
+      - SNAP_VERSION="latest"
     volumes:
-      - ${PLUGIN_SRC}:/snap-plugin-publisher-influxdb      
-    command: ["sleep 86400"]
+      - ${PLUGIN_SRC}:/snap-plugin-publisher-influxdb          
     links:
       - influxdb       
   influxdb:

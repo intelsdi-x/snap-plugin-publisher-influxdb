@@ -11,7 +11,6 @@ __proj_dir="$(dirname "$__dir")"
 
 _info "running the example ${__proj_dir}/examples/tasks/mock-influxb.sh"
 export PLUGIN_PATH="/etc/snap/path"
-export BIN_PATH="/usr/local/bin"
 source "${__proj_dir}/examples/tasks/mock-influxdb.sh"
 
 _debug "sleeping for 10 seconds so the task can do some work"
@@ -44,7 +43,5 @@ else
     echo "not ok"
     return_code=-1
 fi
-
-kill $snapd_pid
 
 exit $return_code
