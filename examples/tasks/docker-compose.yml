@@ -2,9 +2,9 @@ version: '2'
 services:
   main:
     container_name: runner
-    image: intelsdi/snap:latest_alpine
+    image: intelsdi/snap:alpine
     environment:
-      - SNAP_VERSION="latest"
+     - SNAP_VERSION=latest
     volumes:
       - ${PLUGIN_SRC}:/snap-plugin-publisher-influxdb          
     links:

@@ -18,7 +18,7 @@ spec:
               - containerPort: 8083
               - containerPort: 8086
             - name: main
-              image: intelsdi/snap:latest_alpine
+              image: intelsdi/snap:alpine
               env:
                 - name: SNAP_VERSION
                   value: "latest"
