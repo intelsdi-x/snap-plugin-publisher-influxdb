@@ -36,10 +36,13 @@ _notice ()  { [ "${LOG_LEVEL}" -ge 5 ] && echo "$(_fmt notice) ${*}" 1>&2 || tru
 _warning () { [ "${LOG_LEVEL}" -ge 4 ] && echo "$(_fmt warning) ${*}" 1>&2 || true; }
 _error ()   { [ "${LOG_LEVEL}" -ge 3 ] && echo "$(_fmt error) ${*}" 1>&2 || true; exit 1; }
 
-test_dirs=$(find . -type f -name '*.go' -not -path "./.*" -not -path "*/_*" -not -path "./Godeps/*" -not -path "./vendor/*" -print0 | xargs -0 -n1 dirname| sort -u)
+_test_dirs() {
+  local test_dirs=$(find . -type f -name '*.go' -not -path "./.*" -not -path "*/_*" -not -path "./Godeps/*" -not -path "./vendor/*" -print0 | xargs -0 -n1 dirname| sort -u)
+  echo "$test_dirs"
+}
 
-_debug "go code directories:
-${test_dirs}"
+#_debug "go code directories:
+#${test_dirs}"
 
 _go_get() {
   local _url=$1
@@ -61,7 +64,7 @@ _golint() {
 }
 
 _go_vet() {
-  go vet ${test_dirs}
+  go vet $(_test_dirs)
 }
 
 _go_race() {
@@ -71,7 +74,7 @@ _go_race() {
 _go_test() {
   _info "running test type: ${TEST_TYPE}"
   # Standard go tooling behavior is to ignore dirs with leading underscors
-  for dir in $test_dirs;
+  for dir in $(_test_dirs);
   do
     if [[ -z ${go_cover+x} ]]; then
       _debug "running go test with cover in ${dir}"

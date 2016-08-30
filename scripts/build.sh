@@ -1,9 +1,9 @@
-#!/bin/bash -e
+#!/bin/bash
 
 #http://www.apache.org/licenses/LICENSE-2.0.txt
 #
 #
-#Copyright 2015 Intel Corporation
+#Copyright 2016 Intel Corporation
 #
 #Licensed under the Apache License, Version 2.0 (the "License");
 #you may not use this file except in compliance with the License.
@@ -17,28 +17,37 @@
 #See the License for the specific language governing permissions and
 #limitations under the License.
 
+set -e
+set -u
+set -o pipefail
 
-GITVERSION=`git describe --always`
-SOURCEDIR=$1
-BUILDDIR=$SOURCEDIR/build
-PLUGIN=`echo $SOURCEDIR | grep -oh "snap-plugin-.*"`
-ROOTFS=$BUILDDIR/rootfs
-BUILDCMD='go build -a -ldflags "-w"'
+__dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+__proj_dir="$(dirname "$__dir")"
 
-echo
-echo "**** snap plugin build  ****"
-echo
+# shellcheck source=scripts/common.sh
+. "${__dir}/common.sh"
+
+plugin_name=${__proj_dir##*/}
+build_dir="${__proj_dir}/build"
+go_build=(go build -ldflags "-w")
+
+_info "project path: ${__proj_dir}"
+_info "plugin name: ${plugin_name}"
 
 # Disable CGO for builds
 export CGO_ENABLED=0
 
-# Clean build bin dir
-rm -rf $ROOTFS/*
+# rebuild binaries:
+_debug "removing: ${build_dir:?}/*"
+rm -rf "${build_dir:?}/"*
+mkdir -p "${build_dir}/linux/x86_64"
+mkdir -p "${build_dir}/darwin/x86_64"
 
-# Make dir
-mkdir -p $ROOTFS
+arch="x86_64"
 
-# Build plugin
-echo "Source Dir = $SOURCEDIR"
-echo "Building snap plugin: $PLUGIN"
-$BUILDCMD -o $ROOTFS/$PLUGIN
+_info "building plugin: ${plugin_name}"
+export GOOS=linux
+"${go_build[@]}" -o "${build_dir}/${GOOS}/${arch}/${plugin_name}" . || exit 1
+
+export GOOS=darwin
+"${go_build[@]}" -o "${build_dir}/${GOOS}/${arch}/${plugin_name}" . || exit 1

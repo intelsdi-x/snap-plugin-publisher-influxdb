@@ -1,0 +1,20 @@
+version: '2'
+services:
+  main:
+    container_name: runner
+    image: intelsdi/snap:latest_alpine
+    environment:
+      - SNAP_VERSION="latest"
+    volumes:
+      - ${PLUGIN_SRC}:/snap-plugin-publisher-influxdb          
+    links:
+      - influxdb       
+  influxdb:
+    container_name: influxdb
+    image: influxdb:0.13-alpine    
+    ports:
+      - "8083:8083"
+      - "8086:8086"
+    expose:
+      - "8083"
+      - "8086"    

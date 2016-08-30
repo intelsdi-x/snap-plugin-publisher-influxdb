@@ -3,9 +3,7 @@ sudo: false
 language: go
 go:
   - 1.5.4
-  - 1.6.2
-before_install:
-  - "[[ -d $SNAP_PLUGIN_SOURCE ]] || mkdir -p $ORG_PATH && ln -s $TRAVIS_BUILD_DIR $SNAP_PLUGIN_SOURCE" # CI for forks not from intelsdi-x
+  - 1.6.3
 env:
   global:
     - ORG_PATH=/home/travis/gopath/src/github.com/intelsdi-x
@@ -13,11 +11,61 @@ env:
     - GO15VENDOREXPERIMENT=1
   matrix:
     - TEST_TYPE=small
+    - TEST_TYPE=build
+matrix:
+  exclude:
+    - go: 1.5.4
+      env: TEST_TYPE=build
+before_install:
+  - "[[ -d $SNAP_PLUGIN_SOURCE ]] || mkdir -p $ORG_PATH && ln -s $TRAVIS_BUILD_DIR $SNAP_PLUGIN_SOURCE" # CI for forks not from intelsdi-x
 install:
   - cd $SNAP_PLUGIN_SOURCE # change dir into source
   - make deps
 script:
   - make check 2>&1 # Run test suite
+before_deploy: 
+  - make all
+  - "./scripts/pre_deploy.sh"
 notifications:
   slack:
     secure: VkbZLIc2RH8yf3PtIAxUNPdAu3rQQ7yQx0GcK124JhbEnZGaHyK615V0rbG7HcVmYKGPdB0cXqZiLBDKGqGKb2zR1NepOe1nF03jxGSpPq8jIFeEXSJGEYGL34ScDzZZGuG6qwbjFcXiW5lqn6t8igzp7v2+URYBaZo5ktCS2xY=
+deploy:
+  - provider: s3
+    access_key_id: AKIAINMB43VSSPFZISAA
+    secret_access_key:
+      secure: K2AnEm2FcP0wEQ1rWJzkASpLUBHeICjwFxYGiq44HB3KTj/4G4MYtSIxYjWdG9C81sfCbC+wMHyWla8rRrVOxeMTBeJpoBNoX8wo3gAwetfA3DkVyN51xTsiHUa7yhjDjxD9scrGsJlwO+d9zyk63RU9rQGKxoDudlBvtfEat+Uke6Oq0rcUSXzqBF9ejLwscLYlFTmz+NfeACcvVqsB1Ht5RpR/VuqFXwpfmj/G+3YBx6RYQQempltL+JZUzT8UhHpQJf2sp148i/T/jqM4Agwmu398G61Jeu3t7ESDnvA37t+1hmmDq88AOveEp3pbOThCS/4ycbL2DRRns6aQnrZgBbVvHxY/ZdSWsyjVbqBQJCguo4BF0hyDdnfSi8mbkwcRf9XSSftwHxW0NyWPYhg/GASf2lKsrGG7UGZoUmMgb/jJ03sEdwjqzB+ICDa+Txhhmikxgwqfj0hyDXbHYmPNSwQ5TYI35upiEj8X8fERceFYgKGUCmphqsKtZq4iPcdKqJ4xBtHmKLutk2YqkDuKPUrx96/3kSTTF8OfaSU3+bipFcOyo48TLc/QEaag4MRoPU+L47xRwlSrZFFFrioVmFjxgY8yOoN0yRuc9XccMmmEzApa621OlzMjyduMw8UG5/+tXcmOOlcM1n2p+RqtJ/Vi0/9oyG7AxeP4mj8=
+    bucket: snap.ci.snap-telemetry.io
+    region: us-west-2
+    skip_cleanup: true
+    local-dir: s3
+    upload-dir: plugins/
+    acl: public_read
+    on:
+      repo: intelsdi-x/${TRAVIS_REPO_SLUG}
+      branch: master
+      condition: $TEST_TYPE = "build" && $TRAVIS_GO_VERSION = "1.6.3"
+  - provider: s3
+    access_key_id: AKIAINMB43VSSPFZISAA
+    secret_access_key:
+      secure: PTsYNpPnWQIQSkHcmS8BzTzug/HpkN6y2BMrBjy758jEkHFK7PMld0O3EWg1PZJmg7tq+yByChkBiEvcG9QWKPMP6CVbOT95ByJRp7vGi+Rta1SxMbcht/JtiCitqmf7GUubWBmuoipbf703+4HT6h4GxMXsvKKAWIjQrE4g8PGykFJbn+kpCsurNUOYqWgLXgeqequkWfZghs8SXXoWLAh7rwzosSm5sdSOp8xATtJzudmwGIqs44FFJEYWDBwwX+d2cCIHC0MwOBWSWqnXpbMxH1zvcUu6tJY5p6hvDaxGQ4LdDieIDeIjsTS3zmj3tEsWUlL2+rIo3x9HD+ZumVZE15rGGksaKxyTeeQZOHGOP8lYIgg8KSC9gLv6r9S2pTvec/sI82euKe4wUXimNJri2FkOx4Agt02/TYpihzJH9hLm1YqSBKYXOrl1Jd/rj7BuMPa4JJeBXswYCsscU7zpdc76gWoA+51ZM3tZ+i5LrxwySPcnI1rnfoP34RaBx0mk2ong3UHbf12M5Nwp5rIO542b0dE3nIPWln2BjXWbcKTYZhipjOFBoHiLTzQHW93d5s7+iKQNfNbSbReBT0qFq2S/pHwKBrkeVoHqXWD8p17MrhkfgT008MhDFp2C7U+HGzfx7SBH0AjKqb8XRjXOqEq9soCQjK8ijQ5a6Y4=
+    bucket: snap.ci.snap-telemetry.io
+    region: us-west-2
+    skip_cleanup: true
+    local-dir: s3
+    upload-dir: plugins/
+    acl: public_read
+    on:
+      repo: intelsdi-x/${TRAVIS_REPO_SLUG}
+      tags: true
+      condition: $TEST_TYPE = "build" && $TRAVIS_GO_VERSION = "1.6.3"
+  - provider: releases
+    api_key:
+      secure: ozKcVu2076vJtKde0osjHcaTFl7lcy0XEqr9AZ6VeZ5EOWCvxxj/z+XOX3ocunUrdPpbyJtjPSUBUwFfbsbE7fSzCMSJDcSQkFgNm3xSmvRFf78/c2Z6B4DEuq0F8dM1+vsDd1hEW6VIC+gNj263a34JtdfYNH/+rpKvqsMgK93J7yQoImUaZz9gnaifatydvOBiqbffDyx7lJj9ikXGMG383upnGngoXk1O19qRW1xZeIG5JLoJF8HnCT+YMx2L7vUZ/Indbm8C8Eacoy631prkPcJbMg1Wf0t7hGSa61P2wCZf/+04bbimt6hvImA+8Oc4pRxXgZLJ6a3nT9MMQvNCICWeBqzmMoaTo69Y6jP+RUdARYYOC4VTEd8NPAdtqWJbH1RCFF6oeMm4m+urgQDwuVwml/Mqegww+T2yjuUmpUGSK1fn6C268T4HV+PzZK8eYkd0BNjOaFuycZ1D76mia0dW4QTjPfK9CzydV+rduM/wjQvytJ8D+FK/CEI7AZepnCpabDu5nwYSipsEW4O5pKYMOhL6cv6B+LhKYQ6YnKlYURJ9qer0iKUHbet38N8y12EI1Ew2yOZcnlRdHzoeUolx/oaF8kXRkc+TcUvuypSoPSHfRMuIP3xJ9KCbC5u90afm7HPuYFn+WvJFryg4MxeJnpIYdZTk/3pKLGo=
+    file:
+      - release/${TRAVIS_REPO_SLUG}_darwin_x86_64
+      - release/${TRAVIS_REPO_SLUG}_linux_x86_64
+    skip_cleanup: true
+    on:
+      repo: intelsdi-x/${TRAVIS_REPO_SLUG}
+      tags: true
+      condition: $TEST_TYPE = "build" && $TRAVIS_GO_VERSION = "1.6.3"

@@ -8,12 +8,10 @@ services:
     links:
       - influxdb
   influxdb:
-    container_name: infludb_${INFLUXDB_VERSION}
-    build: ./${INFLUXDB_VERSION}
+    container_name: influxdb
+    image: influxdb:${INFLUXDB_VERSION}-alpine
     environment:
       PRE_CREATE_DB: "test"
     expose:
       - "8083"
-      - "8086"
-      - "8090"
-      - "8099"
+      - "8086"      
