@@ -22,11 +22,11 @@ package main
 import (
 	"os"
 
-	"github.com/intelsdi-x/snap-plugin-publisher-influxdb/influx"
+	"github.com/intelsdi-x/snap-plugin-publisher-influxdb/influxdb"
 	"github.com/intelsdi-x/snap/control/plugin"
 )
 
 func main() {
-	meta := influx.Meta()
-	plugin.Start(meta, influx.NewInfluxPublisher(), os.Args[1])
+	meta := influxdb.Meta()
+	plugin.Start(meta, influxdb.NewInfluxPublisher(), os.Args[1])
 }
