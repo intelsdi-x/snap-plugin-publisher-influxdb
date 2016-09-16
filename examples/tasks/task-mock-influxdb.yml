@@ -16,7 +16,7 @@
           password: "secret"          
       publish: 
         - 
-          plugin_name: "influx"
+          plugin_name: "influxdb"
           config: 
              host: "influxdb"
              port: 8086
