@@ -1,4 +1,22 @@
 #!/bin/bash
+# File managed by pluginsync
+
+# http://www.apache.org/licenses/LICENSE-2.0.txt
+#
+#
+# Copyright 2016 Intel Corporation
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 set -e
 set -u
@@ -38,11 +56,9 @@ _error ()   { [ "${LOG_LEVEL}" -ge 3 ] && echo "$(_fmt error) ${*}" 1>&2 || true
 
 _test_dirs() {
   local test_dirs=$(find . -type f -name '*.go' -not -path "./.*" -not -path "*/_*" -not -path "./Godeps/*" -not -path "./vendor/*" -print0 | xargs -0 -n1 dirname| sort -u)
-  echo "$test_dirs"
+  _debug "go code directories ${test_dirs}"
+  echo "${test_dirs}"
 }
-
-#_debug "go code directories:
-#${test_dirs}"
 
 _go_get() {
   local _url=$1

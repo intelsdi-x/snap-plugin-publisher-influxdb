@@ -1,3 +1,9 @@
+# File managed by pluginsync
+#
+# NOTE: please commit OS/Editor specific settings in your .gitignore_global
+# .idea
+# .DS_Store
+#
 # Compiled Object files, Static and Dynamic libs (Shared Objects)
 *.o
 *.a
@@ -21,17 +27,15 @@ _testmain.go
 
 *.exe
 *.test
-.idea
-tmp/
-*.tmp
-scratch/
-build/
-*.swp
+*.prof
+
+# Output of the go coverage tool
+*.out
 profile.cov
-gin-bin
 
 # we don't vendor godep _workspace
 **/Godeps/_workspace/**
+vendor/
 
-# OSX stuff
-.DS_Store
+# ignore build artifacts
+build/
