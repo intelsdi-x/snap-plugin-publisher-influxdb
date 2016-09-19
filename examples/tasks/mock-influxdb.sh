@@ -16,9 +16,9 @@ PLUGIN_PATH=${PLUGIN_PATH:-"${TMPDIR}/snap/plugins"}
 mkdir -p $PLUGIN_PATH
 
 _info "Get latest plugins"
-(cd $PLUGIN_PATH && curl -sSO http://snap.ci.snap-telemetry.io/snap/master/latest/snap-plugin-publisher-mock-file && chmod 755 snap-plugin-publisher-mock-file)
-(cd $PLUGIN_PATH && curl -sSO http://snap.ci.snap-telemetry.io/snap/master/latest/snap-plugin-collector-mock2 && chmod 755 snap-plugin-collector-mock2)
-(cd $PLUGIN_PATH && curl -sSO http://snap.ci.snap-telemetry.io/plugin/build/latest/snap-plugin-publisher-influxdb && chmod 755 snap-plugin-publisher-influxdb)
+(cd $PLUGIN_PATH && curl -sfLSO http://snap.ci.snap-telemetry.io/snap/master/latest/snap-plugin-publisher-mock-file && chmod 755 snap-plugin-publisher-mock-file)
+(cd $PLUGIN_PATH && curl -sfLSO http://snap.ci.snap-telemetry.io/snap/master/latest/snap-plugin-collector-mock2 && chmod 755 snap-plugin-collector-mock2)
+(cd $PLUGIN_PATH && curl -sfLSO http://snap.ci.snap-telemetry.io/plugins/snap-plugin-publisher-influxdb/latest_build/linux/x86_64/snap-plugin-publisher-influxdb && chmod 755 snap-plugin-publisher-influxdb)
 
 _info "creating database"
 curl -i -XPOST http://influxdb:8086/query --data-urlencode "q=CREATE DATABASE test"
