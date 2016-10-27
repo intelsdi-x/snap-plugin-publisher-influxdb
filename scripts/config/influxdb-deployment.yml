@@ -1,12 +1,12 @@
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
-metadata: 
+metadata:
     name: influxdb-deployment
 spec:
     replicas: 1
-    template: 
-        metadata: 
+    template:
+        metadata:
             labels:
                 app: influxdb
         spec:
@@ -18,26 +18,26 @@ spec:
               - containerPort: 8083
               - containerPort: 8086
             - name: main
-              image: intelsdi/snap:alpine
+              image: intelsdi/snap:alpine_test
+              imagePullPolicy: "Always"
               env:
                 - name: SNAP_VERSION
                   value: "latest"
-              imagePullPolicy: "IfNotPresent"                               
 
 ---
 apiVersion: v1
 kind: Service
-metadata:  
+metadata:
+  name: influxdb
   labels:
     app: influxdb
-  name: influxdb
 spec:
   ports:
-  - name: http-api  
+  - name: http-api
     port: 8086
-    targetPort: 8086    
+    targetPort: 8086
     protocol: TCP
-  - name: http-web  
+  - name: http-web
     port: 8083
     targetPort: 8083
     protocol: TCP
