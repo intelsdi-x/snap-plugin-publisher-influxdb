@@ -100,7 +100,7 @@ func (f *influxPublisher) GetConfigPolicy() (*cpolicy.ConfigPolicy, error) {
 	r5, err := cpolicy.NewStringRule("password", true)
 	handleErr(err)
 	r5.Description = "Influxdb password"
-	config.Add(r4)
+	config.Add(r5)
 
 	r6, err := cpolicy.NewStringRule("retention", false, "autogen")
 	handleErr(err)
