@@ -25,6 +25,7 @@ import (
 	"encoding/gob"
 	"net/http"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -57,12 +58,20 @@ func TestInfluxPublish(t *testing.T) {
 
 	Convey("snap plugin InfluxDB integration testing with Influx", t, func() {
 		var buf bytes.Buffer
+		var retention string
+
+		if strings.HasPrefix(os.Getenv("INFLUXDB_VERSION"), "0.") {
+			retention = "default"
+		} else {
+			retention = "autogen"
+		}
 
 		config["host"] = ctypes.ConfigValueStr{Value: os.Getenv("SNAP_INFLUXDB_HOST")}
 		config["port"] = ctypes.ConfigValueInt{Value: 8086}
 		config["user"] = ctypes.ConfigValueStr{Value: "root"}
 		config["password"] = ctypes.ConfigValueStr{Value: "root"}
 		config["database"] = ctypes.ConfigValueStr{Value: "test"}
+		config["retention"] = ctypes.ConfigValueStr{Value: retention}
 		config["debug"] = ctypes.ConfigValueBool{Value: false}
 		config["log-level"] = ctypes.ConfigValueStr{Value: "debug"}
 

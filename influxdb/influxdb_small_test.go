@@ -62,6 +62,7 @@ func TestInfluxDBPlugin(t *testing.T) {
 			testConfig["user"] = ctypes.ConfigValueStr{Value: "root"}
 			testConfig["password"] = ctypes.ConfigValueStr{Value: "root"}
 			testConfig["database"] = ctypes.ConfigValueStr{Value: "test"}
+			testConfig["retention"] = ctypes.ConfigValueStr{Value: "testretention"}
 			cfg, errs := configPolicy.Get([]string{""}).Process(testConfig)
 			Convey("So config policy should process testConfig and return a config", func() {
 				So(cfg, ShouldNotBeNil)

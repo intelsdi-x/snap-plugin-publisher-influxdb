@@ -102,6 +102,11 @@ func (f *influxPublisher) GetConfigPolicy() (*cpolicy.ConfigPolicy, error) {
 	r5.Description = "Influxdb password"
 	config.Add(r4)
 
+	r6, err := cpolicy.NewStringRule("retention", false, "autogen")
+	handleErr(err)
+	r6.Description = "Influxdb retention policy"
+	config.Add(r6)
+
 	cp.Add([]string{""}, config)
 	return cp, nil
 }
@@ -152,7 +157,7 @@ func (f *influxPublisher) Publish(contentType string, content []byte, config map
 	//Set up batch points
 	bps, _ := client.NewBatchPoints(client.BatchPointsConfig{
 		Database:        config["database"].(ctypes.ConfigValueStr).Value,
-		RetentionPolicy: "default",
+		RetentionPolicy: config["retention"].(ctypes.ConfigValueStr).Value,
 		Precision:       defaultTimestampPrecision,
 	})
 
