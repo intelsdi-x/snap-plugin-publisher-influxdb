@@ -3,7 +3,8 @@
 1. [Contributing Code](#contributing-code)
 2. [Contributing Examples](#contributing-examples)
 3. [Contribute Elsewhere](#contribute-elsewhere)
-4. [Thank You](#thank-you)
+4. [Reporting Security Issues](#reporting-security-issues)
+5. [Thank You](#thank-you)
 
 This repository has dedicated developers from Intel working on updates. The most helpful way to contribute is by reporting your experience through issues. Issues may not be updated while we review internally, but they're still incredibly appreciated.
 
@@ -42,6 +43,15 @@ Have you written a blog post about how you use [Snap](http://github.com/intelsdi
 
 ## Contribute Elsewhere
 This repository is one of **many** plugins in **Snap**, a powerful telemetry framework. See the full project at http://snap-telemetry.io
+
+
+## Reporting Security Issues
+
+The Snap team take security very seriously. If you have any issue regarding security,
+please notify us by sending an email to snap-security@intel.com and not by creating a GitHub issue.
+We will follow up with you promptly with more information and a plan for remediation.
+While we are not offering a security bounty, we would love to send some Snap swag your way along with our
+deepest gratitude for your assistance in making Snap a more secure product.
 
 ## Thank You
 And **thank you!** Your contribution, through code and participation, is incredibly important to us.
