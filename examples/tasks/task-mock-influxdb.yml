@@ -21,5 +21,6 @@
              host: "influxdb"
              port: 8086
              database: "test"
+             retention: "autogen"
              user: "admin"
              password: "admin"
