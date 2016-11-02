@@ -64,10 +64,22 @@ This builds the plugin in `/build/rootfs/`
 `export SNAP_PATH=$GOPATH/src/github.com/intelsdi-x/snap/build`
 
 ## Documentation
-<< @TODO
+
+The plugin expects you to provide the following parameters:
+ - `host`
+ - `port`
+ - `database`
+ - `user`
+ - `password`
+
+You can also set the following options if needed:
+ - `https` defaults to `false` (boolean). Set to true to connect to InfluxDB via HTTPS.
+ - `skip-verify` defaults to `false` (boolean). Set to true to complain if the certificate used is not issued by a trusted CA.
 
 ### Examples
-<< @TODO
+
+See [examples/tasks](https://github.com/intelsdi-x/snap-plugin-publisher-influxdb/tree/master/examples/tasks) folder for examples
+
 
 ### Roadmap
 

@@ -24,3 +24,5 @@
              retention: "autogen"
              user: "admin"
              password: "admin"
+             https: true
+             skip-verify: false
