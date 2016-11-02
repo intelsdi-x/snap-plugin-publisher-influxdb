@@ -107,6 +107,16 @@ func (f *influxPublisher) GetConfigPolicy() (*cpolicy.ConfigPolicy, error) {
 	r6.Description = "Influxdb retention policy"
 	config.Add(r6)
 
+	r7, err := cpolicy.NewBoolRule("https", false, false)
+	handleErr(err)
+	r7.Description = "Influxdb HTTPS connection"
+	config.Add(r7)
+
+	r8, err := cpolicy.NewBoolRule("skip-verify", false, false)
+	handleErr(err)
+	r8.Description = "Influxdb HTTPS Skip certificate verification"
+	config.Add(r8)
+
 	cp.Add([]string{""}, config)
 	return cp, nil
 }
@@ -330,7 +340,12 @@ func selectClientConnection(config map[string]ctypes.ConfigValue) (*clientConnec
 	// This is not an ideal way to get the logger but deferring solving this for a later date
 	logger := getLogger(config)
 
-	u, err := url.Parse(fmt.Sprintf("http://%s:%d", config["host"].(ctypes.ConfigValueStr).Value, config["port"].(ctypes.ConfigValueInt).Value))
+	var prefix = "http"
+	if config["https"].(ctypes.ConfigValueBool).Value {
+		prefix = "https"
+	}
+
+	u, err := url.Parse(fmt.Sprintf("%s://%s:%d", prefix, config["host"].(ctypes.ConfigValueStr).Value, config["port"].(ctypes.ConfigValueInt).Value))
 	if err != nil {
 		return nil, err
 	}
@@ -342,15 +357,17 @@ func selectClientConnection(config map[string]ctypes.ConfigValue) (*clientConnec
 	user := config["user"].(ctypes.ConfigValueStr).Value
 	pass := config["password"].(ctypes.ConfigValueStr).Value
 	db := config["database"].(ctypes.ConfigValueStr).Value
+	skipVerify := config["skip-verify"].(ctypes.ConfigValueBool).Value
 	key := connectionKey(u, user, db)
 
 	// Do we have a existing client?
 	if connPool[key] == nil {
 		// create one and add to the pool
 		con, err := client.NewHTTPClient(client.HTTPConfig{
-			Addr:     u.String(),
-			Username: user,
-			Password: pass,
+			Addr:               u.String(),
+			Username:           user,
+			Password:           pass,
+			InsecureSkipVerify: skipVerify,
 		})
 
 		if err != nil {

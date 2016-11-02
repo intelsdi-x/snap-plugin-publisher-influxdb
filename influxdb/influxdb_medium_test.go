@@ -68,6 +68,8 @@ func TestInfluxPublish(t *testing.T) {
 
 		config["host"] = ctypes.ConfigValueStr{Value: os.Getenv("SNAP_INFLUXDB_HOST")}
 		config["port"] = ctypes.ConfigValueInt{Value: 8086}
+		config["https"] = ctypes.ConfigValueBool{Value: false}
+		config["skip-verify"] = ctypes.ConfigValueBool{Value: false}
 		config["user"] = ctypes.ConfigValueStr{Value: "root"}
 		config["password"] = ctypes.ConfigValueStr{Value: "root"}
 		config["database"] = ctypes.ConfigValueStr{Value: "test"}
