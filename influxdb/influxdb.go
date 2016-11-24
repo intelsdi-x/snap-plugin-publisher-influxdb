@@ -350,7 +350,7 @@ func selectClientConnection(config map[string]ctypes.ConfigValue) (*clientConnec
 		return nil, err
 	}
 
-	// Pool changes need to be safe (read & write) since the plugin can be called concurrently by snapd.
+	// Pool changes need to be safe (read & write) since the plugin can be called concurrently by snapteld.
 	m.Lock()
 	defer m.Unlock()
 

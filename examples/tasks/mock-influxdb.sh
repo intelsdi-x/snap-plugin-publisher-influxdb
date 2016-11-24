@@ -41,7 +41,7 @@ SNAP_FLAG=0
                     break
              fi 
         
-        _info "snaptel and/or snapteld are unavailable, sleeping for 3 seconds" 
+        _info "snaptel and/or snapteld are unavailable, sleeping for 10 seconds"
         sleep 10
 done 
 
