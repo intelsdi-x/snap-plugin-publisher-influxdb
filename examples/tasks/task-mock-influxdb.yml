@@ -21,8 +21,8 @@
              host: "influxdb"
              port: 8086
              database: "test"
-             retention: "autogen"
+             retention: "default"
              user: "admin"
              password: "admin"
-             https: true
+             https: false
              skip-verify: false
