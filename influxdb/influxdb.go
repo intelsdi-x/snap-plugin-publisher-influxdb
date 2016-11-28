@@ -39,7 +39,7 @@ import (
 
 const (
 	name                      = "influxdb"
-	version                   = 15
+	version                   = 16
 	pluginType                = plugin.PublisherPluginType
 	maxInt64                  = ^uint64(0) / 2
 	defaultTimestampPrecision = "s"
