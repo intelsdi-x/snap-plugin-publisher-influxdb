@@ -9,9 +9,9 @@ __proj_dir="$(dirname "$__dir")"
 
 . "${__dir}/common.sh"
 
-_info "running the example ${__proj_dir}/examples/tasks/mock-influxb.sh"
+_info "running the example ${__proj_dir}/examples/tasks/meminfo-influxb.sh"
 export PLUGIN_PATH="/etc/snap/path"
-source "${__proj_dir}/examples/tasks/mock-influxdb.sh"
+source "${__proj_dir}/examples/tasks/meminfo-influxdb.sh"
 
 _debug "sleeping for 10 seconds so the task can do some work"
 sleep 10

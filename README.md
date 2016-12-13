@@ -27,17 +27,15 @@ It's used in the [Snap framework](http://github.com/intelsdi-x/snap).
 
 Support Matrix
 
-- InfluxDB Plugin: v2 -> InfluxDB Version 0.9.1 -> Snap version 0.2.0
-- InfluxDB Plugin: v3 -> InfluxDB Version >= 0.9.1 -> Snap version 0.2.0
-- InfluxDB Plugin: v4 -> InfluxDB Version >= 0.9.1 -> Snap version 0.3.x
-- InfluxDB Plugin: v6 -> InfluxDB Version >= 0.9.1 -> Snap version 0.8.0-beta
-- InfluxDB Plugin: v7 -> InfluxDB Version >= 0.9.1 -> Snap version 0.8.0-beta-114 and greater
-- InfluxDB Plugin: v12 -> InfluxDB Version >= 0.9.3 -> Snap version 0.8.0-beta-114 and greater
-- InfluxDB Plugin: v12 -> InfluxDB Version >= 0.9.4 -> Snap version 0.13.0-beta and greater
+Influxdb | Influxdb Publisher | Snap
+-----|-----|-----
+1.0 | 16 | 1.0.0
+1.1 | 16 | 1.0.0
+1.1.1 | 16 | 1.0.0
 
 ### Known Limitation
 
-* InfluxDB (tested with InfluxDB 0.10.0) does not support uint64 as type of data. Metrics with uint64 type are converted to int64 by Snap publisher plugin. uint64 values higher than maximum int64 value are converted to negative value and saved in InfluxDB. Overflow cases are logged.
+* InfluxDB (tested with InfluxDB 1.0) does not support uint64 as type of data. Metrics with uint64 type are converted to int64 by Snap publisher plugin. uint64 values higher than maximum int64 value are converted to negative value and saved in InfluxDB. Overflow cases are logged.
 
 ### Installation
 

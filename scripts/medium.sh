@@ -12,7 +12,7 @@ __proj_name="$(basename $__proj_dir)"
 . "${__dir}/common.sh"
 
 # NOTE: these variables control the docker-compose image.
-export INFLUXDB_VERSION="${INFLUXDB_VERSION:-"0.13"}"
+export INFLUXDB_VERSION="${INFLUXDB_VERSION:-"1.0"}"
 export PLUGIN_SRC="${__proj_dir}"
 
 export GOLANGVER="${GOLANGVER:-"1.6.2"}"

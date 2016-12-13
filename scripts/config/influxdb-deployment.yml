@@ -12,7 +12,7 @@ spec:
         spec:
             containers:
             - name: influxdb
-              image: influxdb:0.13-alpine
+              image: influxdb:1.0-alpine
               imagePullPolicy: "IfNotPresent"
               ports:
               - containerPort: 8083
@@ -20,9 +20,16 @@ spec:
             - name: main
               image: intelsdi/snap:alpine_test
               imagePullPolicy: "Always"
+              volumeMounts:
+              - mountPath: /var/procfs
+                name: procfs
               env:
                 - name: SNAP_VERSION
                   value: "latest"
+            volumes:
+            - name: procfs
+              hostPath:
+                path: /proc
 
 ---
 apiVersion: v1
