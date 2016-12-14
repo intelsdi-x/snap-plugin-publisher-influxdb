@@ -1,0 +1,17 @@
+package: github.com/intelsdi-x/snap-plugin-publisher-influxdb
+import:
+- package: github.com/Sirupsen/logrus
+- package: github.com/influxdata/influxdb
+  subpackages:
+  - client/v2
+- package: github.com/intelsdi-x/snap
+  version: ^1.0
+  subpackages:
+  - control/plugin
+  - control/plugin/cpolicy
+  - core
+  - core/ctypes
+testImport:
+- package: github.com/smartystreets/goconvey
+  subpackages:
+  - convey
