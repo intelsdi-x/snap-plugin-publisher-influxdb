@@ -7,21 +7,18 @@
   workflow: 
     collect: 
       metrics: 
-        /intel/mock/foo: {}
-        /intel/mock/bar: {}
-        /intel/mock/*/baz: {}
-      config: 
-        /intel/mock: 
-          name: "root"
-          password: "secret"          
-      publish: 
+        /intel/procfs/meminfo/mem_free: {}
+        /intel/procfs/meminfo/mem_total: {}
+      config:
+        /intel/procfs/meminfo:
+          "proc_path": "/var/procfs"
+      publish:
         - 
           plugin_name: "influxdb"
           config: 
              host: "influxdb"
              port: 8086
              database: "test"
-             retention: "default"
              user: "admin"
              password: "admin"
              https: false

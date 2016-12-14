@@ -16,7 +16,7 @@ PLUGIN_PATH=${PLUGIN_PATH:-"${TMPDIR}/snap/plugins"}
 mkdir -p $PLUGIN_PATH
 
 _info "Get latest plugins"
-(cd $PLUGIN_PATH && curl -sfLSO http://snap.ci.snap-telemetry.io/snap/master/latest/snap-plugin-collector-mock2 && chmod 755 snap-plugin-collector-mock2)
+(cd $PLUGIN_PATH && curl -sfLSO http://snap.ci.snap-telemetry.io/plugins/snap-plugin-collector-meminfo/latest_build/linux/x86_64/snap-plugin-collector-meminfo && chmod 755 snap-plugin-collector-meminfo)
 (cd $PLUGIN_PATH && curl -sfLSO http://snap.ci.snap-telemetry.io/plugins/snap-plugin-publisher-influxdb/latest_build/linux/x86_64/snap-plugin-publisher-influxdb && chmod 755 snap-plugin-publisher-influxdb)
 
 _info "creating database"
@@ -30,11 +30,11 @@ SNAP_FLAG=0
                 then
 
                     _info "loading plugins"
-                    snaptel plugin load "${PLUGIN_PATH}/snap-plugin-collector-mock2"
+                    snaptel plugin load "${PLUGIN_PATH}/snap-plugin-collector-meminfo"
                     snaptel plugin load "${PLUGIN_PATH}/snap-plugin-publisher-influxdb" 
 
                     _info "creating and starting a task"
-                    snaptel task create -t "${__dir}/task-mock-influxdb.yml" 
+                    snaptel task create -t "${__dir}/task-meminfo-influxdb.yml" 
 
                     SNAP_FLAG=1
 

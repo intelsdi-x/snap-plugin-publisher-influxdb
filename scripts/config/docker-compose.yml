@@ -5,6 +5,7 @@ services:
     image: intelsdi/gvm:latest
     volumes:
       - ${PLUGIN_SRC}:/snap-plugin-publisher-influxdb
+      - /proc:/var/procfs
     links:
       - influxdb
   influxdb:

@@ -7,11 +7,12 @@ services:
      - SNAP_VERSION=latest
     volumes:
       - ${PLUGIN_SRC}:/snap-plugin-publisher-influxdb
+      - /proc:/var/procfs
     links:
       - influxdb
   influxdb:
     container_name: influxdb
-    image: influxdb:0.13-alpine
+    image: influxdb:${INFLUXDB_VERSION}
     expose:
       - "8083"
       - "8086"
