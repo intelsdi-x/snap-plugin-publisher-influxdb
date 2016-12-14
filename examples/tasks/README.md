@@ -31,7 +31,7 @@ then run `meminfo-influxdb.sh`.
         trigger cleaning up the containers used in the example.
         - "influxdb" is the container running influxdb. 
 - [meminfo-influxdb.sh](meminfo-influxdb.sh)
-    - Downloads `snapteld`, `snaptel`, `snap-plugin-collector-meminfo1`,
+    - Downloads `snapteld`, `snaptel`, `snap-plugin-collector-meminfo`,
     `snap-plugin-publisher-influxdb` and starts the task 
     [task-meminfo-influxdb.yml](task-meminfo-influxdb.yml).
 - [.setup.sh](.setup.sh)

@@ -10,7 +10,7 @@
         /intel/procfs/meminfo/mem_free: {}
         /intel/procfs/meminfo/mem_total: {}
       config:
-        /intel/procfs/load:
+        /intel/procfs/meminfo:
           "proc_path": "/var/procfs"
       publish:
         - 
