@@ -76,6 +76,7 @@ func TestInfluxPublish(t *testing.T) {
 		config["retention"] = ctypes.ConfigValueStr{Value: retention}
 		config["debug"] = ctypes.ConfigValueBool{Value: false}
 		config["log-level"] = ctypes.ConfigValueStr{Value: "debug"}
+		config["precison"] = ctypes.ConfigValueStr{Value: "s"}
 
 		ip := NewInfluxPublisher()
 		cp, _ := ip.GetConfigPolicy()

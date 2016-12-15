@@ -38,11 +38,10 @@ import (
 )
 
 const (
-	name                      = "influxdb"
-	version                   = 16
-	pluginType                = plugin.PublisherPluginType
-	maxInt64                  = ^uint64(0) / 2
-	defaultTimestampPrecision = "s"
+	name       = "influxdb"
+	version    = 16
+	pluginType = plugin.PublisherPluginType
+	maxInt64   = ^uint64(0) / 2
 )
 
 var (
@@ -117,6 +116,11 @@ func (f *influxPublisher) GetConfigPolicy() (*cpolicy.ConfigPolicy, error) {
 	r8.Description = "Influxdb HTTPS Skip certificate verification"
 	config.Add(r8)
 
+	r9, err := cpolicy.NewStringRule("precision", false, "s")
+	handleErr(err)
+	r9.Description = "Influxdb timestamp precision"
+	config.Add(r9)
+
 	cp.Add([]string{""}, config)
 	return cp, nil
 }
@@ -168,7 +172,7 @@ func (f *influxPublisher) Publish(contentType string, content []byte, config map
 	bps, _ := client.NewBatchPoints(client.BatchPointsConfig{
 		Database:        config["database"].(ctypes.ConfigValueStr).Value,
 		RetentionPolicy: config["retention"].(ctypes.ConfigValueStr).Value,
-		Precision:       defaultTimestampPrecision,
+		Precision:       config["precision"].(ctypes.ConfigValueStr).Value,
 	})
 
 	for _, m := range metrics {

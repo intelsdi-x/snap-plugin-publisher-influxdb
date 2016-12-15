@@ -72,6 +72,7 @@ The plugin expects you to provide the following parameters:
 You can also set the following options if needed:
  - `https` defaults to `false` (boolean). Set to true to connect to InfluxDB via HTTPS.
  - `skip-verify` defaults to `false` (boolean). Set to true to complain if the certificate used is not issued by a trusted CA.
+ - `precision` defaults to `s` (string). The value can be changed to any of the following: n,u,ms,s,m,h. This will determine the precision of timestamps.
 
 ### Examples
 
