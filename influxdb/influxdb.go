@@ -39,7 +39,7 @@ import (
 
 const (
 	name       = "influxdb"
-	version    = 16
+	version    = 17
 	pluginType = plugin.PublisherPluginType
 	maxInt64   = ^uint64(0) / 2
 )
