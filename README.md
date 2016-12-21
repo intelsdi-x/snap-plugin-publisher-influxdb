@@ -64,17 +64,20 @@ This builds the plugin in `./build`
 
 The plugin expects you to provide the following parameters:
  - `host`
- - `port`
  - `database`
  - `user`
  - `password`
 
 You can also set the following options if needed:
- - `https` defaults to `false` (boolean). Set to true to connect to InfluxDB via HTTPS.
  - `skip-verify` defaults to `false` (boolean). Set to true to complain if the certificate used is not issued by a trusted CA.
  - `precision` defaults to `s` (string). The value can be changed to any of the following: n,u,ms,s,m,h. This will determine the precision of timestamps.
  - `isMultiFields` defaults to `false` (boolean). When it's true, plugin groups common namespaces, those that differ at the leaf and have same tags including values, into one data point with multiple influx fields.  
- 
+ - `port` defaults to `8086` which works with `http` and `https`. The port is `4444` for udp in the example.
+ - `scheme` defaults to `http`.
+   - `http`
+   - `https`
+   - `udp`
+
 ### Examples
 
 See [examples/tasks](https://github.com/intelsdi-x/snap-plugin-publisher-influxdb/tree/master/examples/tasks) folder for examples.  

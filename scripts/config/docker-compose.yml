@@ -10,9 +10,10 @@ services:
       - influxdb
   influxdb:
     container_name: influxdb
-    image: influxdb:${INFLUXDB_VERSION}-alpine
+    image: tutum/influxdb
     environment:
-      PRE_CREATE_DB: "test"
+      UDP_DB: "test"
     expose:
       - "8083"
-      - "8086"      
+      - "8086"    
+      - "4444/udp"  
