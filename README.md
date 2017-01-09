@@ -73,11 +73,36 @@ You can also set the following options if needed:
  - `https` defaults to `false` (boolean). Set to true to connect to InfluxDB via HTTPS.
  - `skip-verify` defaults to `false` (boolean). Set to true to complain if the certificate used is not issued by a trusted CA.
  - `precision` defaults to `s` (string). The value can be changed to any of the following: n,u,ms,s,m,h. This will determine the precision of timestamps.
-
+ - `isMultiFields` defaults to `false` (boolean). When it's true, plugin groups common namespaces, those that differ at the leaf and have same tags including values, into one data point with multiple influx fields.  
+ 
 ### Examples
 
-See [examples/tasks](https://github.com/intelsdi-x/snap-plugin-publisher-influxdb/tree/master/examples/tasks) folder for examples
+See [examples/tasks](https://github.com/intelsdi-x/snap-plugin-publisher-influxdb/tree/master/examples/tasks) folder for examples.  
 
+Here are samples to illustrate the differences for `isMultiFields` flag. When *isMultiFields* is `false` which is the default setting, 
+you have to query each measurement. While *isMultiFields* is `true`, plugin groups the common namespaces, those that differ at the leaf and have same tags including values, into one data point with multiple influx fields; you query the common namespace.
+
+**Sample** *`isMultiField=false`*
+```
+select * from "/intel/psutil/load/load1"
+```
+
+| time | source | unit | value |
+|---------------------|---------------|---------|-------|
+| 1483997727411599704 | egu-mac01.lan | Load/1M | 1.76 |
+| 1483997728412178616 | egu-mac01.lan | Load/1M | 1.76 |
+
+
+**Sample** *`isMultiField=true`*
+```
+select * from "/intel/psutil/load"
+```
+
+| time | load1 | load15 | load5 | source | unit |
+|---------------------|-------|--------|-------|---------------|---------|
+| 1483996289995839909 | 2.05 |  |  | egu-mac01.lan | Load/1M |
+| 1483996289995839909 |  | 6.21 |  | egu-mac01.lan | Load/1M |
+| 1483996289995839909 |  |  | 5.26 | egu-mac01.lan | Load/1M |
 
 ### Roadmap
 

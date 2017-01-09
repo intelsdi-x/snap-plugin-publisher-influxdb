@@ -39,7 +39,7 @@ import (
 
 const (
 	name       = "influxdb"
-	version    = 17
+	version    = 18
 	pluginType = plugin.PublisherPluginType
 	maxInt64   = ^uint64(0) / 2
 )
@@ -70,6 +70,13 @@ func NewInfluxPublisher() *influxPublisher {
 }
 
 type influxPublisher struct {
+}
+
+type point struct {
+	ns     core.Namespace
+	tags   map[string]string
+	ts     time.Time
+	fields map[string]interface{}
 }
 
 func (f *influxPublisher) GetConfigPolicy() (*cpolicy.ConfigPolicy, error) {
@@ -116,10 +123,15 @@ func (f *influxPublisher) GetConfigPolicy() (*cpolicy.ConfigPolicy, error) {
 	r8.Description = "Influxdb HTTPS Skip certificate verification"
 	config.Add(r8)
 
-	r9, err := cpolicy.NewStringRule("precision", false, "s")
+	r9, err := cpolicy.NewStringRule("precision", false, "ns")
 	handleErr(err)
 	r9.Description = "Influxdb timestamp precision"
 	config.Add(r9)
+
+	r10, err := cpolicy.NewBoolRule("isMultiFields", false, false)
+	handleErr(err)
+	r10.Description = "groupping common namespaces, those that differ at the leaf, into one data point with multiple influx fields"
+	config.Add(r10)
 
 	cp.Add([]string{""}, config)
 	return cp, nil
@@ -175,6 +187,8 @@ func (f *influxPublisher) Publish(contentType string, content []byte, config map
 		Precision:       config["precision"].(ctypes.ConfigValueStr).Value,
 	})
 
+	isMultiFields := config["isMultiFields"].(ctypes.ConfigValueBool).Value
+	mpoints := map[string]point{}
 	for _, m := range metrics {
 		tags := map[string]string{}
 		ns := m.Namespace().Strings()
@@ -228,18 +242,38 @@ func (f *influxPublisher) Publish(contentType string, content []byte, config map
 				log.Errorf("Overflow during conversion uint64 to int64, value after conversion to int64: %d, desired uint64 value: %d ", data, v)
 			}
 		}
-		pt, err := client.NewPoint(strings.Join(ns, "/"), tags, map[string]interface{}{
-			"value": data,
-		}, m.Timestamp())
-		if err != nil {
-			logger.WithFields(log.Fields{
-				"err":          err,
-				"batch-points": bps.Points(),
-				"point":        pt,
-			}).Error("Publishing failed. Problem creating data point")
-			return err
+
+		if !isMultiFields {
+			pt, err := client.NewPoint(strings.Join(ns, "/"), tags, map[string]interface{}{
+				"value": data,
+			}, m.Timestamp())
+			if err != nil {
+				logger.WithFields(log.Fields{
+					"err":          err,
+					"batch-points": bps.Points(),
+					"point":        pt,
+				}).Error("Publishing failed. Problem creating data point")
+				return err
+			}
+			bps.AddPoint(pt)
+		} else {
+			groupCommonNamespaces(m, tags, mpoints)
 		}
-		bps.AddPoint(pt)
+	}
+
+	if isMultiFields {
+		for _, p := range mpoints {
+			pt, err := client.NewPoint(p.ns.String(), p.tags, p.fields, p.ts)
+			if err != nil {
+				logger.WithFields(log.Fields{
+					"err":          err,
+					"batch-points": bps.Points(),
+					"point":        pt,
+				}).Error("Publishing failed. Problem creating data point")
+				return err
+			}
+			bps.AddPoint(pt)
+		}
 	}
 
 	err = con.write(bps)
@@ -398,4 +432,38 @@ func selectClientConnection(config map[string]ctypes.ConfigValue) (*clientConnec
 
 func connectionKey(u *url.URL, user, db string) string {
 	return fmt.Sprintf("%s:%s:%s", u.String(), user, db)
+}
+
+// groupCommonNamespaces groups common namespaces, those that differ at the leaf, into one data point with multiple influx fields.
+func groupCommonNamespaces(m plugin.MetricType, tags map[string]string, mpoints map[string]point) {
+	elems := m.Namespace()
+	// Slices to the second to last
+	s2l := elems[:len(elems)-1]
+	if len(s2l) == 0 {
+		s2l = elems
+	}
+
+	// Appends tag keys
+	mkeys := []string{}
+	for k, v := range tags {
+		mkeys = append(mkeys, k, v)
+	}
+	// Appends namespace prefix
+	mkeys = append(mkeys, s2l.Strings()...)
+
+	// Converts the map keys to a string key
+	sk := strings.Join(mkeys, core.Separator)
+
+	// Groups fields by the namespace common prefix and tags
+	fieldName := elems[len(elems)-1].Value
+	if p, ok := mpoints[sk]; !ok {
+		mpoints[sk] = point{
+			ns:     s2l,
+			tags:   tags,
+			ts:     m.Timestamp(),
+			fields: map[string]interface{}{fieldName: m.Data()},
+		}
+	} else {
+		p.fields[fieldName] = m.Data()
+	}
 }

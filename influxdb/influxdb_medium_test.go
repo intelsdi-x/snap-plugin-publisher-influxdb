@@ -95,6 +95,7 @@ func TestInfluxPublish(t *testing.T) {
 		})
 
 		Convey("Publish float metric", func() {
+			tags["test"] = "test"
 			metrics := []plugin.MetricType{
 				*plugin.NewMetricType(core.NewNamespace("bar"), time.Now(), tags, "some unit", 3.141),
 			}
@@ -167,6 +168,41 @@ func TestInfluxPublish(t *testing.T) {
 			metrics := []plugin.MetricType{
 				*plugin.NewMetricType(core.NewNamespace("baz"), time.Now(), tags, "some unit", nil),
 			}
+			buf.Reset()
+			enc := gob.NewEncoder(&buf)
+			enc.Encode(metrics)
+			err := ip.Publish(plugin.SnapGOBContentType, buf.Bytes(), *cfg)
+			So(err, ShouldBeNil)
+		})
+
+		Convey("Publish multiple fields to one metric", func() {
+			config["isMultiFields"] = ctypes.ConfigValueBool{Value: true}
+			metrics := []plugin.MetricType{
+				*plugin.NewMetricType(core.NewNamespace("a", "b", "x"), time.Now(), tags, "test unit", 123.6),
+				*plugin.NewMetricType(core.NewNamespace("a", "b", "y"), time.Now(), tags, "test unit", 765.3),
+				*plugin.NewMetricType(core.NewNamespace("a", "b", "z"), time.Now(), tags, "test unit", 12345),
+				*plugin.NewMetricType(core.NewNamespace("a", "b", "z"), time.Now(), tags, "testunit", 11111),
+			}
+
+			buf.Reset()
+			enc := gob.NewEncoder(&buf)
+			enc.Encode(metrics)
+			err := ip.Publish(plugin.SnapGOBContentType, buf.Bytes(), *cfg)
+			So(err, ShouldBeNil)
+		})
+
+		Convey("Publish multiple fields to two metrics", func() {
+			config["isMultiFields"] = ctypes.ConfigValueBool{Value: true}
+			ntags := map[string]string{"zone": "red", "light": "yellow"}
+			metrics := []plugin.MetricType{
+				*plugin.NewMetricType(core.NewNamespace("influx", "x"), time.Now(), tags, "test unit", 333.6),
+				*plugin.NewMetricType(core.NewNamespace("influx", "y"), time.Now(), tags, "test unit", 222.3),
+				*plugin.NewMetricType(core.NewNamespace("influx", "z"), time.Now(), tags, "test unit", 1111),
+				*plugin.NewMetricType(core.NewNamespace("influx", "r"), time.Now(), ntags, "unittest ", 777),
+				*plugin.NewMetricType(core.NewNamespace("influx", "s"), time.Now(), ntags, "unittest", 888),
+				*plugin.NewMetricType(core.NewNamespace("influx", "s"), time.Now(), ntags, "unit test", 999),
+			}
+
 			buf.Reset()
 			enc := gob.NewEncoder(&buf)
 			enc.Encode(metrics)
