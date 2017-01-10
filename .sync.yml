@@ -17,6 +17,16 @@
     matrix:
       - TEST_TYPE=small
       - TEST_TYPE=medium
+      - SNAP_VERSION: latest
+        TEST_TYPE: large
+      - SNAP_VERSION: latest_build
+        TEST_TYPE: large
+  matrix:
+    exclude:
+      - go: 1.6.x
+        env: SNAP_VERSION=latest TEST_TYPE=large
+      - go: 1.6.x
+        env: SNAP_VERSION=latest_build TEST_TYPE=large
   deploy:
     access_key_id: AKIAINMB43VSSPFZISAA
     secret_access_key:
