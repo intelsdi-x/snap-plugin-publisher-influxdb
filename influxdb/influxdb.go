@@ -39,9 +39,14 @@ import (
 
 const (
 	name       = "influxdb"
-	version    = 18
+	version    = 19
 	pluginType = plugin.PublisherPluginType
 	maxInt64   = ^uint64(0) / 2
+
+	// HTTP represents its string constant
+	HTTP = "http"
+	// UDP represents its string constant
+	UDP = "udp"
 )
 
 var (
@@ -88,7 +93,7 @@ func (f *influxPublisher) GetConfigPolicy() (*cpolicy.ConfigPolicy, error) {
 	r1.Description = "Influxdb host"
 	config.Add(r1)
 
-	r2, err := cpolicy.NewIntegerRule("port", true)
+	r2, err := cpolicy.NewIntegerRule("port", false, 8086)
 	handleErr(err)
 	r2.Description = "Influxdb port"
 	config.Add(r2)
@@ -113,11 +118,6 @@ func (f *influxPublisher) GetConfigPolicy() (*cpolicy.ConfigPolicy, error) {
 	r6.Description = "Influxdb retention policy"
 	config.Add(r6)
 
-	r7, err := cpolicy.NewBoolRule("https", false, false)
-	handleErr(err)
-	r7.Description = "Influxdb HTTPS connection"
-	config.Add(r7)
-
 	r8, err := cpolicy.NewBoolRule("skip-verify", false, false)
 	handleErr(err)
 	r8.Description = "Influxdb HTTPS Skip certificate verification"
@@ -130,8 +130,13 @@ func (f *influxPublisher) GetConfigPolicy() (*cpolicy.ConfigPolicy, error) {
 
 	r10, err := cpolicy.NewBoolRule("isMultiFields", false, false)
 	handleErr(err)
-	r10.Description = "groupping common namespaces, those that differ at the leaf, into one data point with multiple influx fields"
+	r10.Description = "groupping common namespaces, those that differ at the leaf and have same tags including values, into one data point with multiple influx fields"
 	config.Add(r10)
+
+	r11, err := cpolicy.NewStringRule("scheme", false, HTTP)
+	handleErr(err)
+	r11.Description = "Influxdb communication protocol"
+	config.Add(r11)
 
 	cp.Add([]string{""}, config)
 	return cp, nil
@@ -378,12 +383,12 @@ func selectClientConnection(config map[string]ctypes.ConfigValue) (*clientConnec
 	// This is not an ideal way to get the logger but deferring solving this for a later date
 	logger := getLogger(config)
 
-	var prefix = "http"
-	if config["https"].(ctypes.ConfigValueBool).Value {
-		prefix = "https"
+	scheme := config["scheme"].(ctypes.ConfigValueStr).Value
+	if strings.Trim(scheme, " ") == "" {
+		scheme = HTTP
 	}
 
-	u, err := url.Parse(fmt.Sprintf("%s://%s:%d", prefix, config["host"].(ctypes.ConfigValueStr).Value, config["port"].(ctypes.ConfigValueInt).Value))
+	u, err := url.Parse(fmt.Sprintf("%s://%s:%d", scheme, config["host"].(ctypes.ConfigValueStr).Value, config["port"].(ctypes.ConfigValueInt).Value))
 	if err != nil {
 		return nil, err
 	}
@@ -401,12 +406,20 @@ func selectClientConnection(config map[string]ctypes.ConfigValue) (*clientConnec
 	// Do we have a existing client?
 	if connPool[key] == nil {
 		// create one and add to the pool
-		con, err := client.NewHTTPClient(client.HTTPConfig{
-			Addr:               u.String(),
-			Username:           user,
-			Password:           pass,
-			InsecureSkipVerify: skipVerify,
-		})
+		var con client.Client
+		var err error
+		if scheme != UDP {
+			con, err = client.NewHTTPClient(client.HTTPConfig{
+				Addr:               u.String(),
+				Username:           user,
+				Password:           pass,
+				InsecureSkipVerify: skipVerify,
+			})
+		} else {
+			con, err = client.NewUDPClient(client.UDPConfig{
+				Addr: u.Host,
+			})
+		}
 
 		if err != nil {
 			return nil, err

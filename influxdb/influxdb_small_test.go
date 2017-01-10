@@ -59,7 +59,7 @@ func TestInfluxDBPlugin(t *testing.T) {
 			testConfig := make(map[string]ctypes.ConfigValue)
 			testConfig["host"] = ctypes.ConfigValueStr{Value: "localhost"}
 			testConfig["port"] = ctypes.ConfigValueInt{Value: 8086}
-			testConfig["https"] = ctypes.ConfigValueBool{Value: false}
+			testConfig["scheme"] = ctypes.ConfigValueStr{Value: "http"}
 			testConfig["skip-verify"] = ctypes.ConfigValueBool{Value: false}
 			testConfig["user"] = ctypes.ConfigValueStr{Value: "root"}
 			testConfig["password"] = ctypes.ConfigValueStr{Value: "root"}
