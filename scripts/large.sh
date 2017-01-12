@@ -10,37 +10,26 @@ __proj_name="$(basename $__proj_dir)"
 
 . "${__dir}/common.sh"
 
-# NOTE: these variables control the docker-compose image.
-export INFLUXDB_VERSION="${INFLUXDB_VERSION:-"v0.10.1"}"
-export PLUGIN_SRC="${__proj_dir}"
-export LOG_LEVEL="${LOG_LEVEL:-"7"}"
-export PROJECT_NAME="${__proj_name}"
 
-TEST_TYPE="${TEST_TYPE:-"large"}"
-
-docker_folder="${__proj_dir}/scripts/docker/${TEST_TYPE}"
-influx_folder="${docker_folder}/../influxdb/${INFLUXDB_VERSION}"
-
-[[ -d ${influx_folder} ]] || _error "invalid Influxdb version: ${INFLUXDB_VERSION}"
-
-_docker_project () {
-  cd "${docker_folder}" && "$@"
+_verify_docker() {
+  type -p docker > /dev/null 2>&1 || _error "docker needs to be installed"
+  type -p docker-compose > /dev/null 2>&1 || _error "docker-compose needs to be installed"
+  docker version >/dev/null 2>&1 || _error "docker needs to be configured/running"
 }
 
-_debug "building docker compose images"
-_docker_project docker-compose build
-_debug "running docker compose images"
-_docker_project docker-compose up -d
-_debug "running test: ${TEST_TYPE}"
-cd "${docker_folder}"
+_verify_docker
 
-set +e
-docker-compose exec main bash -c "export INFLUXDB_VERSION=$INFLUXDB_VERSION; export LOG_LEVEL=$LOG_LEVEL; /${__proj_name}/scripts/large_tests.sh" 
-test_res=$?
-set -e
-_debug "exit code $test_res"
-_debug "stopping docker compose images"
-_docker_project docker-compose stop
-_debug "removing docker compose images"
-_docker_project docker-compose rm -f
-exit $test_res
+[[ -f "${__proj_dir}/build/linux/x86_64/${__proj_name}" ]] || (cd "${__proj_dir}" && make)
+
+SNAP_VERSION=${SNAP_VERSION:-"latest"}
+OS=${OS:-"alpine"}
+PLUGIN_PATH=${PLUGIN_PATH:-"${__proj_dir}"}
+
+if [[ ${DEBUG:-} == "true" ]]; then
+  cmd="cd /plugin/scripts && rescue rspec ./test/*_spec.rb"
+else
+  cmd="cd /plugin/scripts && rspec ./test/*_spec.rb"
+fi
+
+_info "running large test"
+docker run -v /var/run/docker.sock:/var/run/docker.sock -v "${__proj_dir}":/plugin -e PLUGIN_PATH="${PLUGIN_PATH}" -e SNAP_VERSION="${SNAP_VERSION}" -e OS="${OS}" -ti intelsdi/serverspec:alpine /bin/sh -c "${cmd}"

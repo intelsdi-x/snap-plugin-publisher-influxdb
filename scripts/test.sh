@@ -94,7 +94,7 @@ elif [[ $TEST_TYPE == "large" ]]; then
   elif [[ -f "${__dir}/large_compose.sh" ]]; then
     . "${__dir}/large_compose.sh"
   else
-    _info "No large tests."
+    . "${__dir}/large.sh"
   fi
 elif [[ $TEST_TYPE == "build" ]]; then
   "${__dir}/build.sh"

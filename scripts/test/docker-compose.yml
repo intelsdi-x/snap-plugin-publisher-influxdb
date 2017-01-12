@@ -1,0 +1,19 @@
+version: '2'
+services:
+  snap:
+    image: intelsdi/snap:alpine_test
+    environment:
+      SNAP_VERSION: ${SNAP_VERSION}
+      INFLUXDB_HOST: "influxdb"
+    volumes:
+      - ${PLUGIN_PATH}:/plugin
+    links:
+      - influxdb
+  influxdb:
+    image: tutum/influxdb
+    environment:
+      UDP_DB: "test"
+    expose:
+      - "8083"
+      - "8086"
+      - "4444/udp"

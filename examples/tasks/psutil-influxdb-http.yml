@@ -1,0 +1,25 @@
+---
+  version: 1
+  schedule:
+    type: "simple"
+    interval: "1s"
+  max-failures: 10
+  workflow:
+    collect:
+      metrics:
+        /intel/psutil/load/load1: {}
+        /intel/psutil/load/load15: {}
+        /intel/psutil/load/load5: {}
+        /intel/psutil/vm/available: {}
+        /intel/psutil/vm/free: {}
+        /intel/psutil/vm/used: {}
+      publish:
+        - plugin_name: "influxdb"
+          config:
+             host: "${INFLUXDB_HOST}"
+             port: 8086
+             database: "test"
+             user: "admin"
+             password: "admin"
+             scheme: http
+             skip-verify: false

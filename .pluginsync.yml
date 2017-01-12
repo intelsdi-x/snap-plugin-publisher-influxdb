@@ -14,5 +14,10 @@ managed_files:
 - scripts/build.sh
 - scripts/common.sh
 - scripts/deps.sh
+- scripts/large.sh
 - scripts/pre_deploy.sh
+- scripts/test
+- scripts/test/docker-compose.yml
+- scripts/test/large_spec.rb
+- scripts/test/spec_helper.rb
 - scripts/test.sh

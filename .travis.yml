@@ -2,8 +2,8 @@
 sudo: true
 language: go
 go:
-- 1.6.3
-- 1.7.3
+- 1.6.x
+- 1.7.x
 services:
   - docker
 env:
@@ -13,10 +13,18 @@ env:
   matrix:
   - TEST_TYPE=small
   - TEST_TYPE=medium
+  - SNAP_VERSION: latest
+    TEST_TYPE: large
+  - SNAP_VERSION: latest_build
+    TEST_TYPE: large
   - TEST_TYPE=build
 matrix:
   exclude:
-  - go: 1.6.3
+  - go: 1.6.x
+    env: SNAP_VERSION=latest TEST_TYPE=large
+  - go: 1.6.x
+    env: SNAP_VERSION=latest_build TEST_TYPE=large
+  - go: 1.6.x
     env: TEST_TYPE=build
 before_install:
 - "[[ -d $SNAP_PLUGIN_SOURCE ]] || mkdir -p $ORG_PATH && ln -s $TRAVIS_BUILD_DIR $SNAP_PLUGIN_SOURCE"
@@ -45,7 +53,7 @@ deploy:
   on:
     repo: intelsdi-x/snap-plugin-publisher-influxdb
     branch: master
-    condition: $TEST_TYPE = "build" && $TRAVIS_GO_VERSION = "1.7.3"
+    condition: $TEST_TYPE = "build" && $TRAVIS_GO_VERSION =~ ^1\.7\.[0-9]+$
 - provider: s3
   access_key_id: AKIAINMB43VSSPFZISAA
   secret_access_key:
@@ -59,7 +67,7 @@ deploy:
   on:
     repo: intelsdi-x/snap-plugin-publisher-influxdb
     tags: true
-    condition: $TEST_TYPE = "build" && $TRAVIS_GO_VERSION = "1.7.3"
+    condition: $TEST_TYPE = "build" && $TRAVIS_GO_VERSION =~ ^1\.7\.[0-9]+$
 - provider: releases
   api_key:
     secure: BxPzO6z768C2Sc6lijoRJNhMiL+HnUfcLWXB99WVQM++OaY+3t98EjabETvPfgCfl3gxyBrTnfn3umuj3dbFCSspptY+mnI/sjvvu3yfHMOPOGT+5yhPzBir+WA5GN4gAlAwvOoMYTUJf//An7b4Pa+98Tz52MJMtYvNPTtHmG8K4G6xhWRtkuIRp7jMrBJpp27RHBW03csBcX+wYwaPjTtRev4/VhnbQxquSq6EYWSXlxBPNt24y2zQJ5qcFs50XEz6FVzXp9S4rN9ngVbCHfdmwM/JxJCoeKgjDJErVb8VISNUHUHTin+4vtAU4ypheyWzxNcpGeCIECd7eNSwXFoCAZlmJIORDiWX3BlE7Hjxn+J3h0hw2EkOt6B/ReaY0fdg88xWZCGgUYiXTt4EQ7h0XugpQjTme/3w0efWufikwvgJi7EG1ITKTmTwvh8ps8IkU9WigIqcTacTLE051EIVhVsiUZJsuGgIdhQ3d3XCGS500GxNifrTxovOu2l0D3DKXoMbzt9quDHWSU28iJZsnAaYAKGt1M4rvahuC0KQ2d64Qcy4qIzoFc2O2FY9xqZGYAn0h0uPdzCgBj9FoHu3D/YEUDM7XTTws0hVT94/HpDcCiqd4zuE95cD0fHCjQfCWOBf9qMxbKWTAyHslMGtTwlIFL1IaAjLNpyI3SI=
@@ -70,4 +78,4 @@ deploy:
   on:
     repo: intelsdi-x/snap-plugin-publisher-influxdb
     tags: true
-    condition: $TEST_TYPE = "build" && $TRAVIS_GO_VERSION = "1.7.3"
+    condition: $TEST_TYPE = "build" && $TRAVIS_GO_VERSION =~ ^1\.7\.[0-9]+$
