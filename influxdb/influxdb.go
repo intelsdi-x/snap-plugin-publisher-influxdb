@@ -268,7 +268,7 @@ func (f *influxPublisher) Publish(contentType string, content []byte, config map
 
 	if isMultiFields {
 		for _, p := range mpoints {
-			pt, err := client.NewPoint(p.ns.String(), p.tags, p.fields, p.ts)
+			pt, err := client.NewPoint(strings.Join(p.ns.Strings(), "/"), p.tags, p.fields, p.ts)
 			if err != nil {
 				logger.WithFields(log.Fields{
 					"err":          err,
