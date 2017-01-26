@@ -35,4 +35,5 @@ else
 fi
 
 _info "running large test"
+find "${__proj_dir}/"
 docker run -v /var/run/docker.sock:/var/run/docker.sock -v "${__proj_dir}":/plugin -e DEMO="${DEMO}" -e TASK="${TASK}" -e PLUGIN_PATH="${PLUGIN_PATH}" -e SNAP_VERSION="${SNAP_VERSION}" -e OS="${OS}" -ti intelsdi/serverspec:alpine /bin/sh -c "${cmd}"

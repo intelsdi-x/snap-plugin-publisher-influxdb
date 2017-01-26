@@ -41,7 +41,9 @@ module SnapUtils
       url = "https://s3-us-west-2.amazonaws.com/snap.ci.snap-telemetry.io/plugins/#{plugin_name}/#{version}/linux/x86_64/#{plugin_name}"
     end
 
+    puts "local plugins: #{local_plugins}"
     if local_plugins.include? plugin_name
+      puts "loading local plugin: #{plugin_name}"
       command("snaptel plugin load #{build_path}/#{plugin_name}").exit_status
     else
       command("curl -sfL #{url} -o /opt/snap/plugins/#{plugin_name}").exit_status
