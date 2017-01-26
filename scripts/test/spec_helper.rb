@@ -41,7 +41,9 @@ module SnapUtils
       url = "https://s3-us-west-2.amazonaws.com/snap.ci.snap-telemetry.io/plugins/#{plugin_name}/#{version}/linux/x86_64/#{plugin_name}"
     end
 
+    puts "local plugins: #{local_plugins}"
     if local_plugins.include? plugin_name
+      puts "loading local plugin: #{plugin_name}"
       command("snaptel plugin load #{build_path}/#{plugin_name}").exit_status
     else
       command("curl -sfL #{url} -o /opt/snap/plugins/#{plugin_name}").exit_status
@@ -89,7 +91,12 @@ module SnapUtils
   end
 
   def self.tasks
-    Dir.glob("#{examples}/tasks/*.yml").collect{|f| File.basename f}
+    if ENV["TASK"] != ""
+      pattern="#{examples}/tasks/#{ENV["TASK"]}"
+    else
+      pattern="#{examples}/tasks/*.y{a,}ml"
+    end
+    Dir.glob(pattern).collect{|f| File.basename f}
   end
 
   def add_plugins(plugins, type)
@@ -165,4 +172,11 @@ RSpec.configure do |c|
   c.verbose_retry = true
   c.order = 'default'
   c.include SnapUtils
+  if ENV["DEMO"] == "true" then
+    Pry.config.pager = false
+
+    Pry.hooks.add_hook(:before_session, "notice") do |output, binding, pry|
+      output.puts "Setup complete for DEMO mode. When you are finished checking out Snap please type 'exit-program' to shutdown containers."
+    end
+  end
 end

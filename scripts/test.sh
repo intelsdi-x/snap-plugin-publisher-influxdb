@@ -70,6 +70,7 @@ test_unit() {
 }
 
 if [[ $TEST_TYPE == "legacy" ]]; then
+  UNIT_TEST="go_test go_cover"
   echo "mode: count" > profile.cov
   export TEST_TYPE="unit"
   test_unit
