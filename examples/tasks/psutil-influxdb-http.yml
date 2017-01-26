@@ -21,6 +21,5 @@
              database: "test"
              user: "admin"
              password: "admin"
-             retention: "default"
              scheme: http
              skip-verify: false
