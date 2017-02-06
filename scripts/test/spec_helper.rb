@@ -89,7 +89,12 @@ module SnapUtils
   end
 
   def self.tasks
-    Dir.glob("#{examples}/tasks/*.yml").collect{|f| File.basename f}
+    if ENV["TASK"] != ""
+      pattern="#{examples}/tasks/#{ENV["TASK"]}"
+    else
+      pattern="#{examples}/tasks/*.y{a,}ml"
+    end
+    Dir.glob(pattern).collect{|f| File.basename f}
   end
 
   def add_plugins(plugins, type)
@@ -165,4 +170,11 @@ RSpec.configure do |c|
   c.verbose_retry = true
   c.order = 'default'
   c.include SnapUtils
+  if ENV["DEMO"] == "true" then
+    Pry.config.pager = false
+ 
+    Pry.hooks.add_hook(:before_session, "notice") do |output, binding, pry|
+      output.puts "Setup complete for DEMO mode. When you are finished checking out Snap please type 'exit-program' to shutdown containers."
+    end
+  end
 end

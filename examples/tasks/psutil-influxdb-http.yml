@@ -3,7 +3,7 @@
   schedule:
     type: "simple"
     interval: "1s"
-  max-failures: 10
+  max-failures: 1
   workflow:
     collect:
       metrics:
