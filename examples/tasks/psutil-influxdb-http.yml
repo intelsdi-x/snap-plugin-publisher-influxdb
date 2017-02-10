@@ -23,3 +23,4 @@
              password: "admin"
              scheme: http
              skip-verify: false
+             isMultiFields: true
