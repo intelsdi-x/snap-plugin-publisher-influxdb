@@ -57,7 +57,8 @@ var (
 	// Our connection pool
 	connPool = make(map[string]*clientConnection)
 	// Mutex for synchronizing connection pool changes
-	m = &sync.Mutex{}
+	m           = &sync.Mutex{}
+	initialized = false
 )
 
 func init() {
@@ -369,6 +370,16 @@ type clientConnection struct {
 	LastUsed time.Time
 }
 
+// Create database if it doesn't exist
+func (c *clientConnection) initDB(db string) error {
+	q := client.Query{
+		Command:  fmt.Sprintf("CREATE DATABASE %s", db),
+		Database: db,
+	}
+	_, err := (*c.Conn).Query(q)
+	return err
+}
+
 // Map the batch points write into client.Client
 func (c *clientConnection) write(bps client.BatchPoints) error {
 	return (*c.Conn).Write(bps)
@@ -429,6 +440,13 @@ func selectClientConnection(config map[string]ctypes.ConfigValue) (*clientConnec
 			Key:      key,
 			Conn:     &con,
 			LastUsed: time.Now(),
+		}
+		if !initialized && scheme != UDP {
+			err = cCon.initDB(db)
+			if err != nil {
+				return nil, err
+			}
+			initialized = true
 		}
 		// Add to the pool
 		connPool[key] = cCon
