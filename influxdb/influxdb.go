@@ -23,6 +23,8 @@ import (
 	"bytes"
 	"encoding/gob"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 	"net/url"
 	"strings"
 	"sync"
@@ -39,7 +41,7 @@ import (
 
 const (
 	name       = "influxdb"
-	version    = 20
+	version    = 21
 	pluginType = plugin.PublisherPluginType
 	maxInt64   = ^uint64(0) / 2
 
@@ -371,13 +373,66 @@ type clientConnection struct {
 }
 
 // Create database if it doesn't exist
-func (c *clientConnection) initDB(db string) error {
-	q := client.Query{
-		Command:  fmt.Sprintf("CREATE DATABASE %s", db),
-		Database: db,
+// workaround: use http instead of client library because of the issue
+// ref: https://github.com/influxdata/influxdb/issues/8108
+func (c *clientConnection) initDB(u *url.URL, user, pass, db string) error {
+	urlStr := fmt.Sprintf("%s/query", u.String())
+
+	req, err := http.NewRequest("POST", urlStr, nil)
+	if err != nil {
+		return err
 	}
-	_, err := (*c.Conn).Query(q)
-	return err
+
+	query := fmt.Sprintf("CREATE DATABASE %s", db)
+	params := req.URL.Query()
+	params.Set("q", query)
+	req.URL.RawQuery = params.Encode()
+
+	req.SetBasicAuth(user, pass)
+
+	_, err = http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Check if database exists
+// workaround: use http instead of client library because of the issue
+// ref: https://github.com/influxdata/influxdb/issues/8108
+func (c *clientConnection) dbExists(u *url.URL, user, pass, db string) bool {
+	urlStr := fmt.Sprintf("%s/query", u.String())
+
+	req, err := http.NewRequest("GET", urlStr, nil)
+	if err != nil {
+		return false
+	}
+
+	query := fmt.Sprintf("SHOW DATABASES")
+	params := req.URL.Query()
+	params.Set("q", query)
+	req.URL.RawQuery = params.Encode()
+
+	req.SetBasicAuth(user, pass)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return false
+	}
+
+	if resp.Body != nil {
+		bodyText, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return false
+		}
+
+		if strings.Contains(string(bodyText), db) {
+			return true
+		}
+		resp.Body.Close()
+	}
+	return false
 }
 
 // Map the batch points write into client.Client
@@ -442,11 +497,13 @@ func selectClientConnection(config map[string]ctypes.ConfigValue) (*clientConnec
 			LastUsed: time.Now(),
 		}
 		if !initialized && scheme != UDP {
-			err = cCon.initDB(db)
+			err = cCon.initDB(u, user, pass, db)
 			if err != nil {
 				return nil, err
 			}
-			initialized = true
+			if cCon.dbExists(u, user, pass, db) {
+				initialized = true
+			}
 		}
 		// Add to the pool
 		connPool[key] = cCon
