@@ -1,37 +1,49 @@
-hash: b917cca6287ff121564c89e854b46366d68f15f8b0b795eeed7984b4d5f23eb2
-updated: 2016-12-14T11:33:29.559410375+01:00
+hash: 8bd0c4c7aad81d92fba50ee6eafd7690de026fc2b9acaee22d25df03ded2c13a
+updated: 2017-03-27T10:41:45.899652789+02:00
 imports:
+- name: github.com/golang/protobuf
+  version: 888eb0692c857ec880338addf316bd662d5e630e
+  subpackages:
+  - proto
 - name: github.com/influxdata/influxdb
-  version: 855c567c67d7fff1e2f91617c292ea20cf26e53c
+  version: b869607dc206cc58e63718ca72ea08293b987a0e
   subpackages:
   - client/v2
   - models
   - pkg/escape
-- name: github.com/intelsdi-x/snap
-  version: 8905198aaab5bfb6d50a747477ca401e3a7a33ab
+- name: github.com/intelsdi-x/snap-plugin-lib-go
+  version: 8ae21e8f72cb1740171073d496a6b7f2cec5ca73
   subpackages:
-  - control/plugin
-  - control/plugin/cpolicy
-  - control/plugin/encoding
-  - control/plugin/encrypter
-  - core
-  - core/cdata
-  - core/ctypes
-  - core/serror
-  - pkg/ctree
-  - pkg/schedule
-  - pkg/stringutils
-  - scheduler/wmap
-- name: github.com/robfig/cron
-  version: 32d9c273155a0506d27cf73dd1246e86a470997e
+  - v1/plugin
+  - v1/plugin/rpc
+- name: github.com/julienschmidt/httprouter
+  version: 6f3f3919c8781ce5c0509c83fffc887a7830c938
 - name: github.com/Sirupsen/logrus
-  version: be52937128b38f1d99787bb476c789e2af1147f1
+  version: 10f801ebc38b33738c9d17d50860f484a0988ff5
+- name: golang.org/x/net
+  version: 154d9f9ea81208afed560f4cf27b4860c8ed1904
+  subpackages:
+  - context
+  - http2
+  - http2/hpack
+  - internal/timeseries
+  - lex/httplex
+  - trace
 - name: golang.org/x/sys
-  version: 8f0908ab3b2457e2e15403d3697c9ef5cb4b57a9
+  version: afadfcc7779c1f4db0f6f6438afcb108d9c9c7cd
   subpackages:
   - unix
-- name: gopkg.in/yaml.v2
-  version: c1cd2254a6dd314c9d73c338c12688c9325d85c6
+- name: google.golang.org/grpc
+  version: 0032a855ba5c8a3c8e0d71c2deef354b70af1584
+  subpackages:
+  - codes
+  - credentials
+  - grpclog
+  - internal
+  - metadata
+  - naming
+  - peer
+  - transport
 testImports:
 - name: github.com/gopherjs/gopherjs
   version: 4b53e1bddba0e2f734514aeb6c02db652f4c6fe8
@@ -45,7 +57,7 @@ testImports:
   - internal/go-render/render
   - internal/oglematchers
 - name: github.com/smartystreets/goconvey
-  version: d4c757aa9afd1e2fc1832aaab209b5794eb336e1
+  version: 995f5b2e021c69b8b028ba6d0b05c1dd500783db
   subpackages:
   - convey
   - convey/gotest

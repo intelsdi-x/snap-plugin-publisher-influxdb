@@ -23,28 +23,22 @@ package influxdb
 import (
 	"testing"
 
-	"github.com/intelsdi-x/snap/control/plugin"
-	"github.com/intelsdi-x/snap/control/plugin/cpolicy"
-	"github.com/intelsdi-x/snap/core/ctypes"
 	. "github.com/smartystreets/goconvey/convey"
+
+	"github.com/intelsdi-x/snap-plugin-lib-go/v1/plugin"
 )
 
 func TestInfluxDBPlugin(t *testing.T) {
-	Convey("Meta should return metadata for the plugin", t, func() {
-		meta := Meta()
-		So(meta.Name, ShouldResemble, name)
-		So(meta.Version, ShouldResemble, version)
-		So(meta.Type, ShouldResemble, plugin.PublisherPluginType)
-	})
 
 	Convey("Create InfluxPublisher", t, func() {
 		ip := NewInfluxPublisher()
-		Convey("So ip should not be nil", func() {
+		Convey("So publisher should not be nil", func() {
 			So(ip, ShouldNotBeNil)
 		})
-		Convey("So ip should be of influxPublisher type", func() {
-			So(ip, ShouldHaveSameTypeAs, &influxPublisher{})
+		Convey("So publisher should be of InfluxPublisher type", func() {
+			So(ip, ShouldHaveSameTypeAs, &InfluxPublisher{})
 		})
+
 		configPolicy, err := ip.GetConfigPolicy()
 		Convey("ip.GetConfigPolicy() should return a config policy", func() {
 			Convey("So config policy should not be nil", func() {
@@ -53,33 +47,8 @@ func TestInfluxDBPlugin(t *testing.T) {
 			Convey("So we should not get an err retreiving the config policy", func() {
 				So(err, ShouldBeNil)
 			})
-			Convey("So config policy should be a cpolicy.ConfigPolicy", func() {
-				So(configPolicy, ShouldHaveSameTypeAs, &cpolicy.ConfigPolicy{})
-			})
-			testConfig := make(map[string]ctypes.ConfigValue)
-			testConfig["host"] = ctypes.ConfigValueStr{Value: "localhost"}
-			testConfig["port"] = ctypes.ConfigValueInt{Value: 8086}
-			testConfig["scheme"] = ctypes.ConfigValueStr{Value: "http"}
-			testConfig["skip-verify"] = ctypes.ConfigValueBool{Value: false}
-			testConfig["user"] = ctypes.ConfigValueStr{Value: "root"}
-			testConfig["password"] = ctypes.ConfigValueStr{Value: "root"}
-			testConfig["database"] = ctypes.ConfigValueStr{Value: "test"}
-			testConfig["retention"] = ctypes.ConfigValueStr{Value: "testretention"}
-			testConfig["precison"] = ctypes.ConfigValueStr{Value: "s"}
-			cfg, errs := configPolicy.Get([]string{""}).Process(testConfig)
-			Convey("So config policy should process testConfig and return a config", func() {
-				So(cfg, ShouldNotBeNil)
-			})
-			Convey("So testConfig processing should return no errors", func() {
-				So(errs.HasErrors(), ShouldBeFalse)
-			})
-			testConfig["port"] = ctypes.ConfigValueStr{Value: "8086"}
-			cfg, errs = configPolicy.Get([]string{""}).Process(testConfig)
-			Convey("So config policy should not return a config after processing invalid testConfig", func() {
-				So(cfg, ShouldBeNil)
-			})
-			Convey("So testConfig processing should return errors", func() {
-				So(errs.HasErrors(), ShouldBeTrue)
+			Convey("So config policy should be of plugin.ConfigPolicy type", func() {
+				So(configPolicy, ShouldHaveSameTypeAs, plugin.ConfigPolicy{})
 			})
 		})
 	})

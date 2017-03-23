@@ -10,6 +10,8 @@
   sudo: true
   services:
     - docker
+  go:
+    - 1.7.x
   env:
     global:
       - ORG_PATH=/home/travis/gopath/src/github.com/intelsdi-x
@@ -21,9 +23,9 @@
         TEST_TYPE: large
   matrix:
     exclude:
-      - go: 1.6.x
+      - go: 1.7.x
         env: SNAP_VERSION=latest TEST_TYPE=large
-      - go: 1.6.x
+      - go: 1.7.x
         env: SNAP_VERSION=latest_build TEST_TYPE=large
   deploy:
     access_key_id: AKIAINMB43VSSPFZISAA
