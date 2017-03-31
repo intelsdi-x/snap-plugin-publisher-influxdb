@@ -15,7 +15,7 @@ __proj_name="$(basename $__proj_dir)"
 export INFLUXDB_VERSION="${INFLUXDB_VERSION:-"1.0"}"
 export PLUGIN_SRC="${__proj_dir}"
 
-export GOLANGVER="${GOLANGVER:-"1.6.2"}"
+export GOLANGVER=${GOLANGVER:-"go1.7.4"}
 
 TEST_TYPE="${TEST_TYPE:-"medium"}"
 
@@ -34,7 +34,7 @@ _debug "running test: ${TEST_TYPE}"
 # sleep for a few seconds giving influxd time to finish initializing 
 sleep 3
 _docker_project docker-compose exec -T golang gvm-bash.sh "curl -i -XPOST http://influxdb:8086/query --data-urlencode \"q=CREATE DATABASE test\""
-_docker_project docker-compose exec -T golang gvm-bash.sh "gvm use $GOLANGVER; export INFLUXDB_VERSION=$INFLUXDB_VERSION; mkdir -p ${_docker_org_path}; cp -Rf /${__proj_name} ${_docker_org_path}; (cd ${_docker_proj_path} && ./scripts/medium_tests.sh)"
+_docker_project docker-compose exec -T golang gvm-bash.sh "gvm install $GOLANGVER -B; gvm use $GOLANGVER; export INFLUXDB_VERSION=$INFLUXDB_VERSION; mkdir -p ${_docker_org_path}; cp -Rf /${__proj_name} ${_docker_org_path}; (cd ${_docker_proj_path} && ./scripts/medium_tests.sh)"
 _debug "stopping docker compose images"
 _docker_project docker-compose stop
 _docker_project docker-compose rm -f

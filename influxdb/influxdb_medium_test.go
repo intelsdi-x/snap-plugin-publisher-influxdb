@@ -18,22 +18,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 package influxdb
 
 import (
-	"bytes"
-	"encoding/gob"
 	"net/http"
 	"os"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/intelsdi-x/snap/control/plugin"
-	"github.com/intelsdi-x/snap/core"
-	"github.com/intelsdi-x/snap/core/ctypes"
-
 	. "github.com/smartystreets/goconvey/convey"
+
+	"github.com/intelsdi-x/snap-plugin-lib-go/v1/plugin"
 )
 
 func init() {
@@ -54,7 +51,6 @@ func init() {
 }
 
 func TestInfluxPublish(t *testing.T) {
-	config := make(map[string]ctypes.ConfigValue)
 
 	Convey("snap plugin InfluxDB integration testing with Influx", t, func() {
 		var retention string
@@ -64,97 +60,122 @@ func TestInfluxPublish(t *testing.T) {
 		} else {
 			retention = "autogen"
 		}
-		config["host"] = ctypes.ConfigValueStr{Value: os.Getenv("SNAP_INFLUXDB_HOST")}
-		config["skip-verify"] = ctypes.ConfigValueBool{Value: false}
-		config["user"] = ctypes.ConfigValueStr{Value: "root"}
-		config["password"] = ctypes.ConfigValueStr{Value: "root"}
-		config["database"] = ctypes.ConfigValueStr{Value: "test"}
-		config["retention"] = ctypes.ConfigValueStr{Value: retention}
-		config["debug"] = ctypes.ConfigValueBool{Value: false}
-		config["log-level"] = ctypes.ConfigValueStr{Value: "debug"}
-		config["precison"] = ctypes.ConfigValueStr{Value: "s"}
+		config := plugin.Config{
+			"host":          os.Getenv("SNAP_INFLUXDB_HOST"),
+			"skip-verify":   false,
+			"user":          "root",
+			"password":      "root",
+			"database":      "test",
+			"retention":     retention,
+			"isMultiFields": false,
+			"debug":         false,
+			"log-level":     "debug",
+			"precision":     "s",
+		}
 
-		tests("", config)
-
-		config["scheme"] = ctypes.ConfigValueStr{Value: HTTP}
-		config["port"] = ctypes.ConfigValueInt{Value: 8086}
+		config["scheme"] = HTTP
+		config["port"] = int64(8086)
 		tests(HTTP, config)
 
-		config["scheme"] = ctypes.ConfigValueStr{Value: UDP}
-		config["port"] = ctypes.ConfigValueInt{Value: 4444}
+		config["scheme"] = UDP
+		config["port"] = int64(4444)
 		tests(UDP, config)
 	})
 }
 
-func tests(scheme string, config map[string]ctypes.ConfigValue) {
-	var buf bytes.Buffer
-
-	ip := NewInfluxPublisher()
-	cp, _ := ip.GetConfigPolicy()
-	cfg, _ := cp.Get([]string{""}).Process(config)
+func tests(scheme string, config plugin.Config) {
+	ip := &InfluxPublisher{}
 	tags := map[string]string{"zone": "red"}
+	mcfg := map[string]interface{}{"field": "abc123"}
 
 	Convey(" Publish integer metric via "+scheme, func() {
-		metrics := []plugin.MetricType{
-			*plugin.NewMetricType(core.NewNamespace("foo"), time.Now(), tags, "some unit", 99),
+		metrics := []plugin.Metric{
+			{
+				Namespace: plugin.NewNamespace("foo"),
+				Timestamp: time.Now(),
+				Config:    mcfg,
+				Tags:      tags,
+				Unit:      "someunit",
+				Data:      99,
+			},
 		}
-		buf.Reset()
-		enc := gob.NewEncoder(&buf)
-		enc.Encode(metrics)
-		err := ip.Publish(plugin.SnapGOBContentType, buf.Bytes(), *cfg)
+		err := ip.Publish(metrics, config)
 		So(err, ShouldBeNil)
 	})
 
 	Convey("Publish float metric via "+scheme, func() {
-		metrics := []plugin.MetricType{
-			*plugin.NewMetricType(core.NewNamespace("bar"), time.Now(), tags, "some unit", 3.141),
+		metrics := []plugin.Metric{
+			{
+				Namespace: plugin.NewNamespace("bar"),
+				Timestamp: time.Now(),
+				Config:    mcfg,
+				Tags:      tags,
+				Unit:      "someunit",
+				Data:      3.141,
+			},
 		}
-		buf.Reset()
-		enc := gob.NewEncoder(&buf)
-		enc.Encode(metrics)
-		err := ip.Publish(plugin.SnapGOBContentType, buf.Bytes(), *cfg)
+		err := ip.Publish(metrics, config)
 		So(err, ShouldBeNil)
 	})
 
 	Convey("Publish string metric via "+scheme, func() {
-		metrics := []plugin.MetricType{
-			*plugin.NewMetricType(core.NewNamespace("qux"), time.Now(), tags, "some unit", "bar"),
+		metrics := []plugin.Metric{
+			{
+				Namespace: plugin.NewNamespace("qux"),
+				Timestamp: time.Now(),
+				Config:    mcfg,
+				Tags:      tags,
+				Unit:      "someunit",
+				Data:      "bar",
+			},
 		}
-		buf.Reset()
-		enc := gob.NewEncoder(&buf)
-		enc.Encode(metrics)
-		err := ip.Publish(plugin.SnapGOBContentType, buf.Bytes(), *cfg)
+		err := ip.Publish(metrics, config)
 		So(err, ShouldBeNil)
 	})
 
 	Convey("Publish boolean metric via "+scheme, func() {
-		metrics := []plugin.MetricType{
-			*plugin.NewMetricType(core.NewNamespace("baz"), time.Now(), tags, "some unit", true),
+		metrics := []plugin.Metric{
+			{
+				Namespace: plugin.NewNamespace("baz"),
+				Timestamp: time.Now(),
+				Config:    mcfg,
+				Tags:      tags,
+				Unit:      "someunit",
+				Data:      true,
+			},
 		}
-		buf.Reset()
-		enc := gob.NewEncoder(&buf)
-		enc.Encode(metrics)
-		err := ip.Publish(plugin.SnapGOBContentType, buf.Bytes(), *cfg)
+		err := ip.Publish(metrics, config)
 		So(err, ShouldBeNil)
 	})
 
 	Convey("Publish multiple metrics via "+scheme, func() {
-		metrics := []plugin.MetricType{
-			*plugin.NewMetricType(core.NewNamespace("foo"), time.Now(), tags, "some unit", 101),
-			*plugin.NewMetricType(core.NewNamespace("bar"), time.Now(), tags, "some unit", 5.789),
+		metrics := []plugin.Metric{
+			{
+				Namespace: plugin.NewNamespace("foo"),
+				Timestamp: time.Now(),
+				Config:    mcfg,
+				Tags:      tags,
+				Unit:      "someunit",
+				Data:      13,
+			},
+			{
+				Namespace: plugin.NewNamespace("bar"),
+				Timestamp: time.Now(),
+				Config:    mcfg,
+				Tags:      tags,
+				Unit:      "someunit",
+				Data:      2.718,
+			},
 		}
-		buf.Reset()
-		enc := gob.NewEncoder(&buf)
-		enc.Encode(metrics)
-		err := ip.Publish(plugin.SnapGOBContentType, buf.Bytes(), *cfg)
+		err := ip.Publish(metrics, config)
 		So(err, ShouldBeNil)
 	})
 
 	Convey("Publish dynamic metrics via "+scheme, func() {
-		dynamicNS1 := core.NewNamespace("foo").
+		dynamicNS1 := plugin.NewNamespace("foo").
 			AddDynamicElement("dynamic", "dynamic elem").
 			AddStaticElement("bar")
-		dynamicNS2 := core.NewNamespace("foo").
+		dynamicNS2 := plugin.NewNamespace("foo").
 			AddDynamicElement("dynamic_one", "dynamic element one").
 			AddDynamicElement("dynamic_two", "dynamic element two").
 			AddStaticElement("baz")
@@ -163,60 +184,137 @@ func tests(scheme string, config map[string]ctypes.ConfigValue) {
 		dynamicNS2[1].Value = "barval"
 		dynamicNS2[2].Value = "bazval"
 
-		metrics := []plugin.MetricType{
-			*plugin.NewMetricType(dynamicNS1, time.Now(), tags, "", 123),
-			*plugin.NewMetricType(dynamicNS2, time.Now(), tags, "", 456),
+		metrics := []plugin.Metric{
+			{
+				Namespace: dynamicNS1,
+				Timestamp: time.Now(),
+				Config:    mcfg,
+				Tags:      tags,
+				Unit:      "someunit",
+				Data:      17,
+			},
+			{
+				Namespace: dynamicNS2,
+				Timestamp: time.Now(),
+				Config:    mcfg,
+				Tags:      tags,
+				Unit:      "someunit",
+				Data:      23,
+			},
 		}
-		buf.Reset()
-		enc := gob.NewEncoder(&buf)
-		enc.Encode(metrics)
-		err := ip.Publish(plugin.SnapGOBContentType, buf.Bytes(), *cfg)
+		err := ip.Publish(metrics, config)
 		So(err, ShouldBeNil)
 	})
 
 	Convey("Publish nil value of metric via "+scheme, func() {
-		metrics := []plugin.MetricType{
-			*plugin.NewMetricType(core.NewNamespace("baz"), time.Now(), tags, "some unit", nil),
+		metrics := []plugin.Metric{
+			{
+				Namespace: plugin.NewNamespace("baz"),
+				Timestamp: time.Now(),
+				Config:    mcfg,
+				Tags:      tags,
+				Unit:      "empty unit",
+				Data:      nil,
+			},
 		}
-		buf.Reset()
-		enc := gob.NewEncoder(&buf)
-		enc.Encode(metrics)
-		err := ip.Publish(plugin.SnapGOBContentType, buf.Bytes(), *cfg)
+		err := ip.Publish(metrics, config)
 		So(err, ShouldBeNil)
 	})
 
 	Convey("Publish multiple fields to one metric via "+scheme, func() {
-		config["isMultiFields"] = ctypes.ConfigValueBool{Value: true}
-		metrics := []plugin.MetricType{
-			*plugin.NewMetricType(core.NewNamespace("a", "b", "x"), time.Now(), tags, "test unit", 123.6),
-			*plugin.NewMetricType(core.NewNamespace("a", "b", "y"), time.Now(), tags, "test unit", 765.3),
-			*plugin.NewMetricType(core.NewNamespace("a", "b", "z"), time.Now(), tags, "test unit", 12345),
-			*plugin.NewMetricType(core.NewNamespace("a", "b", "z"), time.Now(), tags, "testunit", 11111),
+		config["isMultiFields"] = true
+		metrics := []plugin.Metric{
+			{
+				Namespace: plugin.NewNamespace("a", "b", "x"),
+				Timestamp: time.Now(),
+				Config:    mcfg,
+				Tags:      tags,
+				Unit:      "someunit",
+				Data:      123.456,
+			},
+			{
+				Namespace: plugin.NewNamespace("a", "b", "y"),
+				Timestamp: time.Now(),
+				Config:    mcfg,
+				Tags:      tags,
+				Unit:      "someunit",
+				Data:      987.654,
+			},
+			{
+				Namespace: plugin.NewNamespace("a", "b", "z"),
+				Timestamp: time.Now(),
+				Config:    mcfg,
+				Tags:      tags,
+				Unit:      "someunit",
+				Data:      18,
+			},
+			{
+				Namespace: plugin.NewNamespace("a", "b", "z"),
+				Timestamp: time.Now(),
+				Config:    mcfg,
+				Tags:      tags,
+				Unit:      "someunit",
+				Data:      512,
+			},
 		}
-
-		buf.Reset()
-		enc := gob.NewEncoder(&buf)
-		enc.Encode(metrics)
-		err := ip.Publish(plugin.SnapGOBContentType, buf.Bytes(), *cfg)
+		err := ip.Publish(metrics, config)
 		So(err, ShouldBeNil)
 	})
 
 	Convey("Publish multiple fields to two metrics via "+scheme, func() {
-		config["isMultiFields"] = ctypes.ConfigValueBool{Value: true}
+		config["isMultiFields"] = true
 		ntags := map[string]string{"zone": "red", "light": "yellow"}
-		metrics := []plugin.MetricType{
-			*plugin.NewMetricType(core.NewNamespace("influx", "x"), time.Now(), tags, "test unit", 333.6),
-			*plugin.NewMetricType(core.NewNamespace("influx", "y"), time.Now(), tags, "test unit", 222.3),
-			*plugin.NewMetricType(core.NewNamespace("influx", "z"), time.Now(), tags, "test unit", 1111),
-			*plugin.NewMetricType(core.NewNamespace("influx", "r"), time.Now(), ntags, "unittest ", 777),
-			*plugin.NewMetricType(core.NewNamespace("influx", "s"), time.Now(), ntags, "unittest", 888),
-			*plugin.NewMetricType(core.NewNamespace("influx", "s"), time.Now(), ntags, "unit test", 999),
+		metrics := []plugin.Metric{
+			{
+				Namespace: plugin.NewNamespace("influx", "x"),
+				Timestamp: time.Now(),
+				Config:    mcfg,
+				Tags:      tags,
+				Unit:      "someunit",
+				Data:      333.6,
+			},
+			{
+				Namespace: plugin.NewNamespace("influx", "y"),
+				Timestamp: time.Now(),
+				Config:    mcfg,
+				Tags:      tags,
+				Unit:      "someunit",
+				Data:      666.3,
+			},
+			{
+				Namespace: plugin.NewNamespace("influx", "z"),
+				Timestamp: time.Now(),
+				Config:    mcfg,
+				Tags:      tags,
+				Unit:      "someunit",
+				Data:      173,
+			},
+			{
+				Namespace: plugin.NewNamespace("influx", "r"),
+				Timestamp: time.Now(),
+				Config:    mcfg,
+				Tags:      ntags,
+				Unit:      "someunit",
+				Data:      256,
+			},
+			{
+				Namespace: plugin.NewNamespace("influx", "s"),
+				Timestamp: time.Now(),
+				Config:    mcfg,
+				Tags:      ntags,
+				Unit:      "someunit",
+				Data:      128,
+			},
+			{
+				Namespace: plugin.NewNamespace("influx", "s"),
+				Timestamp: time.Now(),
+				Config:    mcfg,
+				Tags:      ntags,
+				Unit:      "someunit",
+				Data:      64,
+			},
 		}
-
-		buf.Reset()
-		enc := gob.NewEncoder(&buf)
-		enc.Encode(metrics)
-		err := ip.Publish(plugin.SnapGOBContentType, buf.Bytes(), *cfg)
+		err := ip.Publish(metrics, config)
 		So(err, ShouldBeNil)
 	})
 }

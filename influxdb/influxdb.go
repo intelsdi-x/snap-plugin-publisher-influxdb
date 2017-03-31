@@ -20,8 +20,6 @@ limitations under the License.
 package influxdb
 
 import (
-	"bytes"
-	"encoding/gob"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -33,17 +31,15 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/influxdata/influxdb/client/v2"
 
-	"github.com/intelsdi-x/snap/control/plugin"
-	"github.com/intelsdi-x/snap/control/plugin/cpolicy"
-	"github.com/intelsdi-x/snap/core"
-	"github.com/intelsdi-x/snap/core/ctypes"
+	"github.com/intelsdi-x/snap-plugin-lib-go/v1/plugin"
 )
 
 const (
-	name       = "influxdb"
-	version    = 21
-	pluginType = plugin.PublisherPluginType
+	Name       = "influxdb"
+	Version    = 22
+	PluginType = "publisher"
 	maxInt64   = ^uint64(0) / 2
+	separator  = "\U0001f422"
 
 	// HTTP represents its string constant
 	HTTP = "http"
@@ -55,7 +51,7 @@ var (
 	// The maximum time a connection can sit around unused.
 	maxConnectionIdle = time.Minute * 30
 	// How frequently idle connections are checked
-	watchConnctionWait = time.Minute * 15
+	watchConnectionWait = time.Minute * 15
 	// Our connection pool
 	connPool = make(map[string]*clientConnection)
 	// Mutex for synchronizing connection pool changes
@@ -67,93 +63,109 @@ func init() {
 	go watchConnections()
 }
 
-// Meta returns a plugin meta data
-func Meta() *plugin.PluginMeta {
-	return plugin.NewPluginMeta(name, version, pluginType, []string{plugin.SnapGOBContentType}, []string{plugin.SnapGOBContentType})
+//NewInfluxPublisher returns an instance of the InfluxDB publisher
+func NewInfluxPublisher() *InfluxPublisher {
+	return &InfluxPublisher{}
 }
 
-//NewInfluxPublisher returns an instance of the InfuxDB publisher
-func NewInfluxPublisher() *influxPublisher {
-	return &influxPublisher{}
-}
-
-type influxPublisher struct {
+type InfluxPublisher struct {
 }
 
 type point struct {
-	ns     core.Namespace
+	ns     plugin.Namespace
 	tags   map[string]string
 	ts     time.Time
 	fields map[string]interface{}
 }
 
-func (f *influxPublisher) GetConfigPolicy() (*cpolicy.ConfigPolicy, error) {
-	cp := cpolicy.New()
-	config := cpolicy.NewPolicyNode()
+type configuration struct {
+	host, database, user, password, retention, precision, scheme, logLevel string
+	port                                                                   int64
+	skipVerify, isMultiFields                                              bool
+}
 
-	r1, err := cpolicy.NewStringRule("host", true)
-	handleErr(err)
-	r1.Description = "Influxdb host"
-	config.Add(r1)
+func getConfig(config plugin.Config) (configuration, error) {
+	cfg := configuration{}
+	var err error
 
-	r2, err := cpolicy.NewIntegerRule("port", false, 8086)
-	handleErr(err)
-	r2.Description = "Influxdb port"
-	config.Add(r2)
+	cfg.host, err = config.GetString("host")
+	if err != nil {
+		return cfg, fmt.Errorf("%s: %s", err, "host")
+	}
 
-	r3, err := cpolicy.NewStringRule("database", true)
-	handleErr(err)
-	r3.Description = "Influxdb db name"
-	config.Add(r3)
+	cfg.database, err = config.GetString("database")
+	if err != nil {
+		return cfg, fmt.Errorf("%s: %s", err, "database")
+	}
 
-	r4, err := cpolicy.NewStringRule("user", true)
-	handleErr(err)
-	r4.Description = "Influxdb user"
-	config.Add(r4)
+	cfg.user, err = config.GetString("user")
+	if err != nil {
+		return cfg, fmt.Errorf("%s: %s", err, "user")
+	}
 
-	r5, err := cpolicy.NewStringRule("password", true)
-	handleErr(err)
-	r5.Description = "Influxdb password"
-	config.Add(r5)
+	cfg.password, err = config.GetString("password")
+	if err != nil {
+		return cfg, fmt.Errorf("%s: %s", err, "password")
+	}
 
-	r6, err := cpolicy.NewStringRule("retention", false, "autogen")
-	handleErr(err)
-	r6.Description = "Influxdb retention policy"
-	config.Add(r6)
+	cfg.retention, err = config.GetString("retention")
+	if err != nil {
+		return cfg, fmt.Errorf("%s: %s", err, "retention")
+	}
 
-	r8, err := cpolicy.NewBoolRule("skip-verify", false, false)
-	handleErr(err)
-	r8.Description = "Influxdb HTTPS Skip certificate verification"
-	config.Add(r8)
+	cfg.scheme, err = config.GetString("scheme")
+	if err != nil {
+		return cfg, fmt.Errorf("%s: %s", err, "scheme")
+	}
 
-	r9, err := cpolicy.NewStringRule("precision", false, "ns")
-	handleErr(err)
-	r9.Description = "Influxdb timestamp precision"
-	config.Add(r9)
+	cfg.logLevel, err = config.GetString("log-level")
+	if err != nil {
+		cfg.logLevel = "undefined"
+	}
 
-	r10, err := cpolicy.NewBoolRule("isMultiFields", false, false)
-	handleErr(err)
-	r10.Description = "groupping common namespaces, those that differ at the leaf and have same tags including values, into one data point with multiple influx fields"
-	config.Add(r10)
+	cfg.port, err = config.GetInt("port")
+	if err != nil {
+		return cfg, fmt.Errorf("%s: %s", err, "port")
+	}
 
-	r11, err := cpolicy.NewStringRule("scheme", false, HTTP)
-	handleErr(err)
-	r11.Description = "Influxdb communication protocol"
-	config.Add(r11)
+	cfg.skipVerify, err = config.GetBool("skip-verify")
+	if err != nil {
+		return cfg, fmt.Errorf("%s: %s", err, "skip-verify")
+	}
 
-	cp.Add([]string{""}, config)
-	return cp, nil
+	cfg.isMultiFields, err = config.GetBool("isMultiFields")
+	if err != nil {
+		return cfg, fmt.Errorf("%s: %s", err, "isMultiFields")
+	}
+
+	return cfg, nil
+}
+
+func (ip *InfluxPublisher) GetConfigPolicy() (plugin.ConfigPolicy, error) {
+	policy := plugin.NewConfigPolicy()
+
+	policy.AddNewStringRule([]string{""}, "host", true)
+	policy.AddNewIntRule([]string{""}, "port", false, plugin.SetDefaultInt(8086))
+	policy.AddNewStringRule([]string{""}, "database", true)
+	policy.AddNewStringRule([]string{""}, "user", true)
+	policy.AddNewStringRule([]string{""}, "password", true)
+	policy.AddNewStringRule([]string{""}, "retention", false, plugin.SetDefaultString("autogen"))
+	policy.AddNewBoolRule([]string{""}, "skip-verify", false, plugin.SetDefaultBool(false))
+	policy.AddNewStringRule([]string{""}, "precision", false, plugin.SetDefaultString("ns"))
+	policy.AddNewBoolRule([]string{""}, "isMultiFields", false, plugin.SetDefaultBool(false))
+	policy.AddNewStringRule([]string{""}, "scheme", false, plugin.SetDefaultString(HTTP))
+
+	return *policy, nil
 }
 
 func watchConnections() {
 	for {
-		time.Sleep(watchConnctionWait)
+		time.Sleep(watchConnectionWait)
 		for k, c := range connPool {
-
 			if time.Now().Sub(c.LastUsed) > maxConnectionIdle {
 				m.Lock()
 				// Close the connection
-				c.close()
+				c.closeClientConnection()
 				// Remove from the pool
 				delete(connPool, k)
 				m.Unlock()
@@ -164,23 +176,13 @@ func watchConnections() {
 
 // Publish publishes metric data to influxdb
 // currently only 0.9 version of influxdb are supported
-func (f *influxPublisher) Publish(contentType string, content []byte, config map[string]ctypes.ConfigValue) error {
-	logger := getLogger(config)
-	var metrics []plugin.MetricType
-
-	switch contentType {
-	case plugin.SnapGOBContentType:
-		dec := gob.NewDecoder(bytes.NewBuffer(content))
-		if err := dec.Decode(&metrics); err != nil {
-			logger.WithFields(log.Fields{
-				"err": err,
-			}).Error("decoding error")
-			return err
-		}
-	default:
-		logger.Errorf("unknown content type '%v'", contentType)
-		return fmt.Errorf("Unknown content type '%s'", contentType)
+func (ip *InfluxPublisher) Publish(metrics []plugin.Metric, pluginConfig plugin.Config) error {
+	config, err := getConfig(pluginConfig)
+	if err != nil {
+		return err
 	}
+
+	logger := getLogger(config)
 
 	con, err := selectClientConnection(config)
 	if err != nil {
@@ -190,18 +192,18 @@ func (f *influxPublisher) Publish(contentType string, content []byte, config map
 
 	//Set up batch points
 	bps, _ := client.NewBatchPoints(client.BatchPointsConfig{
-		Database:        config["database"].(ctypes.ConfigValueStr).Value,
-		RetentionPolicy: config["retention"].(ctypes.ConfigValueStr).Value,
-		Precision:       config["precision"].(ctypes.ConfigValueStr).Value,
+		Database:        config.database,
+		RetentionPolicy: config.retention,
+		Precision:       config.precision,
 	})
 
-	isMultiFields := config["isMultiFields"].(ctypes.ConfigValueBool).Value
+	isMultiFields := config.isMultiFields
 	mpoints := map[string]point{}
 	for _, m := range metrics {
 		tags := map[string]string{}
-		ns := m.Namespace().Strings()
+		ns := m.Namespace.Strings()
 
-		isDynamic, indexes := m.Namespace().IsDynamic()
+		isDynamic, indexes := m.Namespace.IsDynamic()
 		if isDynamic {
 			for i, j := range indexes {
 				// The second return value from IsDynamic(), in this case `indexes`, is the index of
@@ -212,38 +214,38 @@ func (f *influxPublisher) Publish(contentType string, content []byte, config map
 				//
 				// Remove "data" from the namespace and create a tag for it
 				ns = append(ns[:j-i], ns[j-i+1:]...)
-				tags[m.Namespace()[j].Name] = m.Namespace()[j].Value
+				tags[m.Namespace[j].Name] = m.Namespace[j].Value
 			}
 		}
 
 		// Add "unit"" if we do not already have a "unit" tag
-		if _, ok := m.Tags()["unit"]; !ok {
-			tags["unit"] = m.Unit()
+		if _, ok := m.Tags["unit"]; !ok {
+			tags["unit"] = m.Unit
 		}
 
 		// Process the tags for this metric
-		for k, v := range m.Tags() {
+		for k, v := range m.Tags {
 			// Convert the standard tag describing where the plugin is running to "source"
-			if k == core.STD_TAG_PLUGIN_RUNNING_ON {
+			if k == "plugin_running_on" {
 				// Unless the "source" tag is already being used
-				if _, ok := m.Tags()["source"]; !ok {
+				if _, ok := m.Tags["source"]; !ok {
 					k = "source"
 				}
 			}
 			tags[k] = v
 		}
 
-		data := m.Data()
+		data := m.Data
 
 		//publishing of nil value causes errors
 		if data == nil {
-			log.Errorf("Received nil value of metric, this metric is not published, namespace: %s, timestamp: %s", m.Namespace().String(), m.Timestamp().String())
+			log.Errorf("Received nil value of metric, this metric will not be published, namespace: %s, timestamp: %s", strings.Join(m.Namespace.Strings(), "/"), m.Timestamp.String())
 			continue
 		}
 
 		// NOTE: uint64 is specifically not supported by influxdb client due to potential overflow
 		//without convertion of uint64 to int64, data with uint64 type will be saved as strings in influx database
-		v, ok := m.Data().(uint64)
+		v, ok := m.Data.(uint64)
 		if ok {
 			data = int64(v)
 			if v > maxInt64 {
@@ -254,7 +256,7 @@ func (f *influxPublisher) Publish(contentType string, content []byte, config map
 		if !isMultiFields {
 			pt, err := client.NewPoint(strings.Join(ns, "/"), tags, map[string]interface{}{
 				"value": data,
-			}, m.Timestamp())
+			}, m.Timestamp)
 			if err != nil {
 				logger.WithFields(log.Fields{
 					"err":          err,
@@ -292,7 +294,7 @@ func (f *influxPublisher) Publish(contentType string, content []byte, config map
 		}).Error("publishing failed")
 		// Remove connction from pool since something is wrong
 		m.Lock()
-		con.close()
+		con.closeClientConnection()
 		delete(connPool, con.Key)
 		m.Unlock()
 		return err
@@ -304,65 +306,27 @@ func (f *influxPublisher) Publish(contentType string, content []byte, config map
 	return nil
 }
 
-func handleErr(e error) {
-	if e != nil {
-		panic(e)
-	}
-}
-
-func getLogger(config map[string]ctypes.ConfigValue) *log.Entry {
+func getLogger(config configuration) *log.Entry {
 	logger := log.WithFields(log.Fields{
-		"plugin-name":    name,
-		"plugin-version": version,
-		"plugin-type":    pluginType.String(),
+		"plugin-name":    Name,
+		"plugin-version": Version,
+		"plugin-type":    PluginType,
 	})
 
 	// default
 	log.SetLevel(log.WarnLevel)
 
-	if debug, ok := config["debug"]; ok {
-		switch v := debug.(type) {
-		case ctypes.ConfigValueBool:
-			if v.Value {
-				log.SetLevel(log.DebugLevel)
-				return logger
-			}
-		default:
-			logger.WithFields(log.Fields{
-				"field":         "debug",
-				"type":          v,
-				"expected type": "ctypes.ConfigValueBool",
-			}).Error("invalid config type")
+	levelValue := config.logLevel
+	if levelValue != "undefined" {
+		if level, err := log.ParseLevel(strings.ToLower(levelValue)); err == nil {
+			log.SetLevel(level)
+		} else {
+			log.WithFields(log.Fields{
+				"value":             strings.ToLower(levelValue),
+				"acceptable values": "warn, error, debug, info",
+			}).Warn("Invalid log-level config value")
 		}
 	}
-
-	if loglevel, ok := config["log-level"]; ok {
-		switch v := loglevel.(type) {
-		case ctypes.ConfigValueStr:
-			switch strings.ToLower(v.Value) {
-			case "warn":
-				log.SetLevel(log.WarnLevel)
-			case "error":
-				log.SetLevel(log.ErrorLevel)
-			case "debug":
-				log.SetLevel(log.DebugLevel)
-			case "info":
-				log.SetLevel(log.InfoLevel)
-			default:
-				log.WithFields(log.Fields{
-					"value":             strings.ToLower(v.Value),
-					"acceptable values": "warn, error, debug, info",
-				}).Warn("invalid config value")
-			}
-		default:
-			logger.WithFields(log.Fields{
-				"field":         "log-level",
-				"type":          v,
-				"expected type": "ctypes.ConfigValueStr",
-			}).Error("invalid config type")
-		}
-	}
-
 	return logger
 }
 
@@ -441,21 +405,19 @@ func (c *clientConnection) write(bps client.BatchPoints) error {
 }
 
 // Map the close function into client.Client
-func (c *clientConnection) close() error {
+func (c *clientConnection) closeClientConnection() error {
 	return (*c.Conn).Close()
 }
 
-func selectClientConnection(config map[string]ctypes.ConfigValue) (*clientConnection, error) {
+func selectClientConnection(config configuration) (*clientConnection, error) {
 	// This is not an ideal way to get the logger but deferring solving this for a later date
 	logger := getLogger(config)
 
-	scheme := config["scheme"].(ctypes.ConfigValueStr).Value
-	if strings.Trim(scheme, " ") == "" {
-		scheme = HTTP
-	}
+	scheme := config.scheme
 
-	u, err := url.Parse(fmt.Sprintf("%s://%s:%d", scheme, config["host"].(ctypes.ConfigValueStr).Value, config["port"].(ctypes.ConfigValueInt).Value))
+	u, err := url.Parse(fmt.Sprintf("%s://%s:%d", scheme, config.host, config.port))
 	if err != nil {
+		logger.Error("Error parsing URL")
 		return nil, err
 	}
 
@@ -463,10 +425,9 @@ func selectClientConnection(config map[string]ctypes.ConfigValue) (*clientConnec
 	m.Lock()
 	defer m.Unlock()
 
-	user := config["user"].(ctypes.ConfigValueStr).Value
-	pass := config["password"].(ctypes.ConfigValueStr).Value
-	db := config["database"].(ctypes.ConfigValueStr).Value
-	skipVerify := config["skip-verify"].(ctypes.ConfigValueBool).Value
+	user := config.user
+	pass := config.password
+	db := config.database
 	key := connectionKey(u, user, db)
 
 	// Do we have a existing client?
@@ -479,7 +440,7 @@ func selectClientConnection(config map[string]ctypes.ConfigValue) (*clientConnec
 				Addr:               u.String(),
 				Username:           user,
 				Password:           pass,
-				InsecureSkipVerify: skipVerify,
+				InsecureSkipVerify: config.skipVerify,
 			})
 		} else {
 			con, err = client.NewUDPClient(client.UDPConfig{
@@ -523,8 +484,8 @@ func connectionKey(u *url.URL, user, db string) string {
 }
 
 // groupCommonNamespaces groups common namespaces, those that differ at the leaf, into one data point with multiple influx fields.
-func groupCommonNamespaces(m plugin.MetricType, tags map[string]string, mpoints map[string]point) {
-	elems := m.Namespace()
+func groupCommonNamespaces(m plugin.Metric, tags map[string]string, mpoints map[string]point) {
+	elems := m.Namespace
 	// Slices to the second to last
 	s2l := elems[:len(elems)-1]
 	if len(s2l) == 0 {
@@ -540,7 +501,7 @@ func groupCommonNamespaces(m plugin.MetricType, tags map[string]string, mpoints 
 	mkeys = append(mkeys, s2l.Strings()...)
 
 	// Converts the map keys to a string key
-	sk := strings.Join(mkeys, core.Separator)
+	sk := strings.Join(mkeys, separator)
 
 	// Groups fields by the namespace common prefix and tags
 	fieldName := elems[len(elems)-1].Value
@@ -548,10 +509,10 @@ func groupCommonNamespaces(m plugin.MetricType, tags map[string]string, mpoints 
 		mpoints[sk] = point{
 			ns:     s2l,
 			tags:   tags,
-			ts:     m.Timestamp(),
-			fields: map[string]interface{}{fieldName: m.Data()},
+			ts:     m.Timestamp,
+			fields: map[string]interface{}{fieldName: m.Data},
 		}
 	} else {
-		p.fields[fieldName] = m.Data()
+		p.fields[fieldName] = m.Data
 	}
 }
