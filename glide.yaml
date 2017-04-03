@@ -4,13 +4,9 @@ import:
 - package: github.com/influxdata/influxdb
   subpackages:
   - client/v2
-- package: github.com/intelsdi-x/snap
-  version: ^1.0
+- package: github.com/intelsdi-x/snap-plugin-lib-go
   subpackages:
-  - control/plugin
-  - control/plugin/cpolicy
-  - core
-  - core/ctypes
+  - v1/plugin
 testImport:
 - package: github.com/smartystreets/goconvey
   subpackages:
