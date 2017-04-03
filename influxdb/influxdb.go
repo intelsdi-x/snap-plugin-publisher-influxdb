@@ -72,7 +72,7 @@ type InfluxPublisher struct {
 }
 
 type point struct {
-	ns     plugin.Namespace
+	ns     []string
 	tags   map[string]string
 	ts     time.Time
 	fields map[string]interface{}
@@ -200,23 +200,7 @@ func (ip *InfluxPublisher) Publish(metrics []plugin.Metric, pluginConfig plugin.
 	isMultiFields := config.isMultiFields
 	mpoints := map[string]point{}
 	for _, m := range metrics {
-		tags := map[string]string{}
-		ns := m.Namespace.Strings()
-
-		isDynamic, indexes := m.Namespace.IsDynamic()
-		if isDynamic {
-			for i, j := range indexes {
-				// The second return value from IsDynamic(), in this case `indexes`, is the index of
-				// the dynamic element in the unmodified namespace. However, here we're deleting
-				// elements, which is problematic when the number of dynamic elements in a namespace is
-				// greater than 1. Therefore, we subtract i (the loop iteration) from j
-				// (the original index) to compensate.
-				//
-				// Remove "data" from the namespace and create a tag for it
-				ns = append(ns[:j-i], ns[j-i+1:]...)
-				tags[m.Namespace[j].Name] = m.Namespace[j].Value
-			}
-		}
+		ns, tags := replaceDynamicElement(m)
 
 		// Add "unit"" if we do not already have a "unit" tag
 		if _, ok := m.Tags["unit"]; !ok {
@@ -273,7 +257,7 @@ func (ip *InfluxPublisher) Publish(metrics []plugin.Metric, pluginConfig plugin.
 
 	if isMultiFields {
 		for _, p := range mpoints {
-			pt, err := client.NewPoint(strings.Join(p.ns.Strings(), "/"), p.tags, p.fields, p.ts)
+			pt, err := client.NewPoint(strings.Join(p.ns, "/"), p.tags, p.fields, p.ts)
 			if err != nil {
 				logger.WithFields(log.Fields{
 					"err":          err,
@@ -483,10 +467,31 @@ func connectionKey(u *url.URL, user, db string) string {
 	return fmt.Sprintf("%s:%s:%s", u.String(), user, db)
 }
 
+func replaceDynamicElement(m plugin.Metric) ([]string, map[string]string) {
+	tags := map[string]string{}
+	ns := m.Namespace.Strings()
+
+	isDynamic, indexes := m.Namespace.IsDynamic()
+	if isDynamic {
+		for i, j := range indexes {
+			// The second return value from IsDynamic(), in this case `indexes`, is the index of
+			// the dynamic element in the unmodified namespace. However, here we're deleting
+			// elements, which is problematic when the number of dynamic elements in a namespace is
+			// greater than 1. Therefore, we subtract i (the loop iteration) from j
+			// (the original index) to compensate.
+			//
+			// Remove "data" from the namespace and create a tag for it
+			ns = append(ns[:j-i], ns[j-i+1:]...)
+			tags[m.Namespace[j].Name] = m.Namespace[j].Value
+		}
+	}
+	return ns, tags
+}
+
 // groupCommonNamespaces groups common namespaces, those that differ at the leaf, into one data point with multiple influx fields.
 func groupCommonNamespaces(m plugin.Metric, tags map[string]string, mpoints map[string]point) {
-	elems := m.Namespace
 	// Slices to the second to last
+	elems, tag := replaceDynamicElement(m)
 	s2l := elems[:len(elems)-1]
 	if len(s2l) == 0 {
 		s2l = elems
@@ -495,20 +500,21 @@ func groupCommonNamespaces(m plugin.Metric, tags map[string]string, mpoints map[
 	// Appends tag keys
 	mkeys := []string{}
 	for k, v := range tags {
+		tag[k] = v
 		mkeys = append(mkeys, k, v)
 	}
 	// Appends namespace prefix
-	mkeys = append(mkeys, s2l.Strings()...)
+	mkeys = append(mkeys, s2l...)
 
 	// Converts the map keys to a string key
 	sk := strings.Join(mkeys, separator)
 
 	// Groups fields by the namespace common prefix and tags
-	fieldName := elems[len(elems)-1].Value
+	fieldName := elems[len(elems)-1]
 	if p, ok := mpoints[sk]; !ok {
 		mpoints[sk] = point{
 			ns:     s2l,
-			tags:   tags,
+			tags:   tag,
 			ts:     m.Timestamp,
 			fields: map[string]interface{}{fieldName: m.Data},
 		}
