@@ -10,8 +10,6 @@
   sudo: true
   services:
     - docker
-  go:
-    - 1.7.x
   env:
     global:
       - ORG_PATH=/home/travis/gopath/src/github.com/intelsdi-x
