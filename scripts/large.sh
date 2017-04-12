@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # File managed by pluginsync
 
 set -e

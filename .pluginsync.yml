@@ -1,5 +1,5 @@
 # File managed by pluginsync
-pluginsync_config: '0.1.13'
+pluginsync_config: '0.1.14'
 managed_files:
 - .github
 - .github/ISSUE_TEMPLATE.md

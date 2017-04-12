@@ -6,16 +6,21 @@ require 'specinfra/backend/docker_compose'
 compose_yml = File.expand_path(File.join(__FILE__, "../docker-compose.yml"))
 raise(Exception, "Missing docker-compose file: #{compose_yml}") unless File.exists? compose_yml
 
- # NOTE: scan docker compose file and pull latest containers:
- images = File.readlines(compose_yml).select {|l| l =~ /^\s*image:/}
- images = images.collect{|l| l.split('image:').last.strip }.uniq
- images.each do |i|
-   puts `docker pull #{i}`
- end
+# NOTE: scan docker compose file and pull latest containers:
+images = File.readlines(compose_yml).select {|l| l =~ /^\s*image:/}
+images = images.collect{|l| l.split('image:').last.strip }.uniq
+images.each do |i|
+  puts `docker pull #{i}`
+end
 
 set :docker_compose_container, :snap
 
 describe docker_compose(compose_yml) do
+
+  # NOTE: If you need to wait for a service or create a database perform it in setup.rb
+  setup = File.expand_path(File.join(__FILE__, '../setup.rb'))
+  eval File.read setup if File.exists? setup
+
   its_container(:snap) do
     describe 'docker-compose.yml run' do
       TIMEOUT = 60
@@ -85,7 +90,7 @@ describe docker_compose(compose_yml) do
           describe "Metrics in running tasks" do
             it {
               binding.pry if ENV["DEMO"] == "true"
-              
+
               data = curl_json_api("http://127.0.0.1:8181/v1/tasks")
               task = data["body"]["ScheduledTasks"].find{|i| i['id'] == task_id}
               expect(task['id']).to eq task_id
@@ -121,4 +126,8 @@ describe docker_compose(compose_yml) do
       end
     end
   end
+
+  # NOTE: If you need to perform additional checks such as database verification it be done at the end:
+  verify = File.expand_path(File.join(__FILE__, '../verify.rb'))
+  eval File.read verify if File.exists? verify
 end
