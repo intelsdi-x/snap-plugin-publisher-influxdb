@@ -172,7 +172,7 @@ RSpec.configure do |c|
   c.include SnapUtils
   if ENV["DEMO"] == "true" then
     Pry.config.pager = false
- 
+
     Pry.hooks.add_hook(:before_session, "notice") do |output, binding, pry|
       output.puts "Setup complete for DEMO mode. When you are finished checking out Snap please type 'exit-program' to shutdown containers."
     end
