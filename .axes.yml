@@ -1,0 +1,8 @@
+GOLANGVER:
+    - 1.5.4
+    - 1.6.2
+
+MATRIX:
+    - "SIZE=SMALL"
+    - "SIZE=MEDIUM"
+    - "SIZE=SMALL INFLUXVER=0.10.1"
