@@ -20,6 +20,7 @@ limitations under the License.
 package influxdb
 
 import (
+	"crypto/tls"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -36,7 +37,7 @@ import (
 
 const (
 	Name       = "influxdb"
-	Version    = 22
+	Version    = 23
 	PluginType = "publisher"
 	maxInt64   = ^uint64(0) / 2
 	separator  = "\U0001f422"
@@ -323,7 +324,7 @@ type clientConnection struct {
 // Create database if it doesn't exist
 // workaround: use http instead of client library because of the issue
 // ref: https://github.com/influxdata/influxdb/issues/8108
-func (c *clientConnection) initDB(u *url.URL, user, pass, db string) error {
+func (c *clientConnection) initDB(u *url.URL, user, pass, db string, verify bool) error {
 	urlStr := fmt.Sprintf("%s/query", u.String())
 
 	req, err := http.NewRequest("POST", urlStr, nil)
@@ -338,7 +339,12 @@ func (c *clientConnection) initDB(u *url.URL, user, pass, db string) error {
 
 	req.SetBasicAuth(user, pass)
 
-	_, err = http.DefaultClient.Do(req)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: verify},
+	}
+	client := &http.Client{Transport: tr}
+
+	_, err = client.Do(req)
 	if err != nil {
 		return err
 	}
@@ -349,7 +355,7 @@ func (c *clientConnection) initDB(u *url.URL, user, pass, db string) error {
 // Check if database exists
 // workaround: use http instead of client library because of the issue
 // ref: https://github.com/influxdata/influxdb/issues/8108
-func (c *clientConnection) dbExists(u *url.URL, user, pass, db string) bool {
+func (c *clientConnection) dbExists(u *url.URL, user, pass, db string, verify bool) bool {
 	urlStr := fmt.Sprintf("%s/query", u.String())
 
 	req, err := http.NewRequest("GET", urlStr, nil)
@@ -364,7 +370,12 @@ func (c *clientConnection) dbExists(u *url.URL, user, pass, db string) bool {
 
 	req.SetBasicAuth(user, pass)
 
-	resp, err := http.DefaultClient.Do(req)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: verify},
+	}
+	client := &http.Client{Transport: tr}
+
+	resp, err := client.Do(req)
 	if err != nil {
 		return false
 	}
@@ -442,12 +453,13 @@ func selectClientConnection(config configuration) (*clientConnection, error) {
 			LastUsed: time.Now(),
 		}
 		if !initialized && scheme != UDP {
-			err = cCon.initDB(u, user, pass, db)
-			if err != nil {
-				return nil, err
-			}
-			if cCon.dbExists(u, user, pass, db) {
+			if cCon.dbExists(u, user, pass, db, config.skipVerify) {
 				initialized = true
+			} else {
+				err = cCon.initDB(u, user, pass, db, config.skipVerify)
+				if err != nil {
+					return nil, err
+				}
 			}
 		}
 		// Add to the pool
