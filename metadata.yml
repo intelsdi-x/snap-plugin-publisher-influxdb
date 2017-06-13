@@ -2,8 +2,10 @@ name: influxdb
 type: publisher
 maintainer: core
 license: Apache-2.0
-description: "Publishes metrics to Influxdb."
+description: "Publishes Snap metrics to a InfluxDB"
 badge:
   - "[![Build Status](https://travis-ci.org/intelsdi-x/snap-plugin-publisher-influxdb.svg?branch=master)](https://travis-ci.org/intelsdi-x/snap-plugin-publisher-influxdb)"
+  - "[![Build Status](https://ci.snap-telemetry.io/job/snap-plugin-publisher-influxdb-ec2-periodic/badge/icon)](https://ci.snap-telemetry.io/job/snap-plugin-publisher-influxdb-ec2-periodic/)"
 ci:
   - https://travis-ci.org/intelsdi-x/snap-plugin-publisher-influxdb
+  - https://ci.snap-telemetry.io/job/snap-plugin-publisher-influxdb-ec2-periodic
