@@ -77,6 +77,9 @@ You can also set the following options if needed:
    - `http`
    - `https`
    - `udp`
+ - `retention` defaults to `autogen`, it indicates [retention policy](https://docs.influxdata.com/influxdb/v1.0/concepts/key_concepts/#retention-policy)
+  for database with specified duration which determines how long InfluxDB keeps the data, for more information read
+   [Retention Policy Management](https://docs.influxdata.com/influxdb/v1.0/query_language/database_management/#retention-policy-management).
 
 ### Examples
 
