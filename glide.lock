@@ -1,5 +1,5 @@
 hash: 8bd0c4c7aad81d92fba50ee6eafd7690de026fc2b9acaee22d25df03ded2c13a
-updated: 2017-03-27T10:41:45.899652789+02:00
+updated: 2017-07-07T14:51:45.914459721+02:00
 imports:
 - name: github.com/golang/protobuf
   version: 888eb0692c857ec880338addf316bd662d5e630e
@@ -12,14 +12,16 @@ imports:
   - models
   - pkg/escape
 - name: github.com/intelsdi-x/snap-plugin-lib-go
-  version: 8ae21e8f72cb1740171073d496a6b7f2cec5ca73
+  version: 25d0f6c1ebd320c49b1a8cb2c2b32c6091c43530
   subpackages:
   - v1/plugin
   - v1/plugin/rpc
 - name: github.com/julienschmidt/httprouter
   version: 6f3f3919c8781ce5c0509c83fffc887a7830c938
 - name: github.com/Sirupsen/logrus
-  version: 10f801ebc38b33738c9d17d50860f484a0988ff5
+  version: ba1b36c82c5e05c4f912a88eab0dcd91a171688f
+- name: github.com/urfave/cli
+  version: d70f47eeca3afd795160003bc6e28b001d60c67c
 - name: golang.org/x/net
   version: 154d9f9ea81208afed560f4cf27b4860c8ed1904
   subpackages:
