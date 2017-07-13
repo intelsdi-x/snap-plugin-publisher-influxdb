@@ -236,6 +236,8 @@ func (ip *InfluxPublisher) Publish(metrics []plugin.Metric, pluginConfig plugin.
 			if v > maxInt64 {
 				log.Errorf("Overflow during conversion uint64 to int64, value after conversion to int64: %d, desired uint64 value: %d ", data, v)
 			}
+
+			m.Data = data
 		}
 
 		if !isMultiFields {
