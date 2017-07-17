@@ -37,7 +37,7 @@ import (
 
 const (
 	Name       = "influxdb"
-	Version    = 23
+	Version    = 24
 	PluginType = "publisher"
 	maxInt64   = ^uint64(0) / 2
 	separator  = "\U0001f422"
