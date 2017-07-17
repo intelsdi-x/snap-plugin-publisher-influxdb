@@ -37,7 +37,7 @@ import (
 
 const (
 	Name       = "influxdb"
-	Version    = 24
+	Version    = 25
 	PluginType = "publisher"
 	maxInt64   = ^uint64(0) / 2
 	separator  = "\U0001f422"
@@ -236,6 +236,8 @@ func (ip *InfluxPublisher) Publish(metrics []plugin.Metric, pluginConfig plugin.
 			if v > maxInt64 {
 				log.Errorf("Overflow during conversion uint64 to int64, value after conversion to int64: %d, desired uint64 value: %d ", data, v)
 			}
+
+			m.Data = data
 		}
 
 		if !isMultiFields {

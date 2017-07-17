@@ -88,7 +88,7 @@ func tests(scheme string, config plugin.Config) {
 	tags := map[string]string{"zone": "red"}
 	mcfg := map[string]interface{}{"field": "abc123"}
 
-	Convey(" Publish integer metric via "+scheme, func() {
+	Convey("Publish integer metric via "+scheme, func() {
 		metrics := []plugin.Metric{
 			{
 				Namespace: plugin.NewNamespace("foo"),
@@ -112,6 +112,36 @@ func tests(scheme string, config plugin.Config) {
 				Tags:      tags,
 				Unit:      "someunit",
 				Data:      3.141,
+			},
+		}
+		err := ip.Publish(metrics, config)
+		So(err, ShouldBeNil)
+	})
+
+	Convey("Publish uint64 metric via "+scheme, func() {
+		metrics := []plugin.Metric{
+			{
+				Namespace: plugin.NewNamespace("uin"),
+				Timestamp: time.Now(),
+				Config:    mcfg,
+				Tags:      tags,
+				Unit:      "someunit",
+				Data:      uint64(123),
+			},
+		}
+		err := ip.Publish(metrics, config)
+		So(err, ShouldBeNil)
+	})
+
+	Convey("Publish larger than uint64 metric via "+scheme, func() {
+		metrics := []plugin.Metric{
+			{
+				Namespace: plugin.NewNamespace("lar"),
+				Timestamp: time.Now(),
+				Config:    mcfg,
+				Tags:      tags,
+				Unit:      "someunit",
+				Data:      ^uint64(0)/2 + 1,
 			},
 		}
 		err := ip.Publish(metrics, config)

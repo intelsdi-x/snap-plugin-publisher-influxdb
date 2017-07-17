@@ -1,27 +1,27 @@
 hash: 8bd0c4c7aad81d92fba50ee6eafd7690de026fc2b9acaee22d25df03ded2c13a
-updated: 2017-07-07T14:51:45.914459721+02:00
+updated: 2017-07-17T10:10:01.101636431+02:00
 imports:
 - name: github.com/golang/protobuf
   version: 888eb0692c857ec880338addf316bd662d5e630e
   subpackages:
   - proto
 - name: github.com/influxdata/influxdb
-  version: b869607dc206cc58e63718ca72ea08293b987a0e
+  version: 4244d0e0536be53aab18160cd57e59190d57a693
   subpackages:
   - client/v2
   - models
   - pkg/escape
 - name: github.com/intelsdi-x/snap-plugin-lib-go
-  version: 25d0f6c1ebd320c49b1a8cb2c2b32c6091c43530
+  version: a8b9252d1c8305deb3c24495f1e9ce26607fcbd7
   subpackages:
   - v1/plugin
   - v1/plugin/rpc
 - name: github.com/julienschmidt/httprouter
-  version: 6f3f3919c8781ce5c0509c83fffc887a7830c938
+  version: 975b5c4c7c21c0e3d2764200bf2aa8e34657ae6e
 - name: github.com/Sirupsen/logrus
   version: ba1b36c82c5e05c4f912a88eab0dcd91a171688f
 - name: github.com/urfave/cli
-  version: d70f47eeca3afd795160003bc6e28b001d60c67c
+  version: 4b90d79a682b4bf685762c7452db20f2a676ecb2
 - name: golang.org/x/net
   version: 154d9f9ea81208afed560f4cf27b4860c8ed1904
   subpackages:
@@ -32,7 +32,7 @@ imports:
   - lex/httplex
   - trace
 - name: golang.org/x/sys
-  version: afadfcc7779c1f4db0f6f6438afcb108d9c9c7cd
+  version: 4cd6d1a821c7175768725b55ca82f14683a29ea4
   subpackages:
   - unix
 - name: google.golang.org/grpc
