@@ -30,6 +30,20 @@ set -o pipefail
 __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 __proj_dir="$(dirname "$__dir")"
 
+export GOLANGVER=${GOLANGVER:-"go1.7.4"}
+
+# Remove existing containers
+if [ "$(docker ps -q -f "name=/golang_${GOLANGVER}\b")" ]; then 
+        echo -n "Removing old container (golang_${GOLANGVER}) ... "        
+        docker rm -f golang_${GOLANGVER}         
+fi
+
+if [ "$(docker ps -q -f 'name=/influxdb\b')" ]; then 
+        echo -n "Removing old container (influxdb) ... "   
+        docker rm -f influxdb          
+fi
+
+
 # shellcheck source=scripts/common.sh
 . "${__dir}/common.sh"
 
