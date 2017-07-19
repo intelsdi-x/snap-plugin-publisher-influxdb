@@ -15,7 +15,6 @@ __proj_name="$(basename $__proj_dir)"
 export INFLUXDB_VERSION="${INFLUXDB_VERSION:-"1.0"}"
 export PLUGIN_SRC="${__proj_dir}"
 
-export GOLANGVER=${GOLANGVER:-"go1.7.4"}
 
 TEST_TYPE="${TEST_TYPE:-"medium"}"
 
