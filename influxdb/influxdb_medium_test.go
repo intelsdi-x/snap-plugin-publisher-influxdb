@@ -22,6 +22,7 @@ limitations under the License.
 package influxdb
 
 import (
+	"math"
 	"net/http"
 	"os"
 	"strings"
@@ -249,6 +250,21 @@ func tests(scheme string, config plugin.Config) {
 		}
 		err := ip.Publish(metrics, config)
 		So(err, ShouldBeNil)
+	})
+
+	Convey("Publish NaN value of metric via "+scheme, func() {
+		metrics := []plugin.Metric{
+			{
+				Namespace: plugin.NewNamespace("nan"),
+				Timestamp: time.Now(),
+				Config:    mcfg,
+				Tags:      tags,
+				Unit:      "nan unit",
+				Data:      math.Log(-1.0),
+			},
+		}
+
+		So(func() { ip.Publish(metrics, config) }, ShouldNotPanic)
 	})
 
 	Convey("Publish multiple fields to one metric via "+scheme, func() {
