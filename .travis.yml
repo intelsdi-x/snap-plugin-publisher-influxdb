@@ -2,10 +2,10 @@
 sudo: true
 language: go
 go:
-  - 1.7.x
-  - 1.8.x
+- 1.7.x
+- 1.8.x
 services:
-  - docker
+- docker
 env:
   global:
   - ORG_PATH=/home/travis/gopath/src/github.com/intelsdi-x
@@ -17,7 +17,7 @@ env:
     TEST_TYPE: large
   - SNAP_VERSION: latest_build
     TEST_TYPE: large
-  - TEST_TYPE=build
+  - TEST_TYPE: build
 matrix:
   exclude:
   - go: 1.7.x
@@ -43,8 +43,6 @@ deploy:
 - provider: s3
   access_key_id: $AWS_ACCESS_KEY_ID
   secret_access_key: $AWS_SECRET_ACCESS_KEY
-  secret_access_key:
-    secure: K2AnEm2FcP0wEQ1rWJzkASpLUBHeICjwFxYGiq44HB3KTj/4G4MYtSIxYjWdG9C81sfCbC+wMHyWla8rRrVOxeMTBeJpoBNoX8wo3gAwetfA3DkVyN51xTsiHUa7yhjDjxD9scrGsJlwO+d9zyk63RU9rQGKxoDudlBvtfEat+Uke6Oq0rcUSXzqBF9ejLwscLYlFTmz+NfeACcvVqsB1Ht5RpR/VuqFXwpfmj/G+3YBx6RYQQempltL+JZUzT8UhHpQJf2sp148i/T/jqM4Agwmu398G61Jeu3t7ESDnvA37t+1hmmDq88AOveEp3pbOThCS/4ycbL2DRRns6aQnrZgBbVvHxY/ZdSWsyjVbqBQJCguo4BF0hyDdnfSi8mbkwcRf9XSSftwHxW0NyWPYhg/GASf2lKsrGG7UGZoUmMgb/jJ03sEdwjqzB+ICDa+Txhhmikxgwqfj0hyDXbHYmPNSwQ5TYI35upiEj8X8fERceFYgKGUCmphqsKtZq4iPcdKqJ4xBtHmKLutk2YqkDuKPUrx96/3kSTTF8OfaSU3+bipFcOyo48TLc/QEaag4MRoPU+L47xRwlSrZFFFrioVmFjxgY8yOoN0yRuc9XccMmmEzApa621OlzMjyduMw8UG5/+tXcmOOlcM1n2p+RqtJ/Vi0/9oyG7AxeP4mj8=
   bucket: snap.ci.snap-telemetry.io
   region: us-west-2
   skip_cleanup: true
